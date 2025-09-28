@@ -118,3 +118,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Body text uses Geist */
+body {
+  font-family: 'Geist', sans-serif;
+}
+
+/* Headings use Inter */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Optional: Buttons or other elements */
+button {
+  font-family: 'Inter', sans-serif;
+}
