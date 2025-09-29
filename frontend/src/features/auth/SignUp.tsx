@@ -5,14 +5,13 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { FcGoogle } from "react-icons/fc"
 import { FaGithub, FaFacebook } from "react-icons/fa"
-import { Link } from "react-router-dom"
 
-export default function Login() {
+export default function SignUp(){
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md p-6 shadow-lg rounded-2xl">
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
+          <CardTitle className="text-2xl font-bold">Signup</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -24,7 +23,7 @@ export default function Login() {
             <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" placeholder="Password" />
           </div>
-          <Button className="w-full">Login</Button>
+          <Button className="w-full">Create an account</Button>
 
           <Separator className="my-4" />
 
@@ -42,7 +41,7 @@ export default function Login() {
         </CardContent>
 
         <CardFooter className="justify-center text-sm">
-          Don’t have an account? <a href="/signup" className="ml-1 underline">Signup</a>
+          Already a user? <a href="/login" className="ml-1 underline">Login</a>
         </CardFooter>
       </Card>
     </div>

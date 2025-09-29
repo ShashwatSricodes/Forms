@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import {
   Accordion,
@@ -28,42 +29,19 @@ import {
 
 const Navbar = () => {
   const features = [
-    {
-      title: "Dashboard",
-      description: "Overview of your activity",
-      href: "#",
-    },
-    {
-      title: "Analytics",
-      description: "Track your performance",
-      href: "#",
-    },
-    {
-      title: "Settings",
-      description: "Configure your preferences",
-      href: "#",
-    },
-    {
-      title: "Integrations",
-      description: "Connect with other tools",
-      href: "#",
-    },
-    {
-      title: "Storage",
-      description: "Manage your files",
-      href: "#",
-    },
-    {
-      title: "Support",
-      description: "Get help when needed",
-      href: "#",
-    },
+    { title: "Dashboard", description: "Overview of your activity", href: "#" },
+    { title: "Analytics", description: "Track your performance", href: "#" },
+    { title: "Settings", description: "Configure your preferences", href: "#" },
+    { title: "Integrations", description: "Connect with other tools", href: "#" },
+    { title: "Storage", description: "Manage your files", href: "#" },
+    { title: "Support", description: "Get help when needed", href: "#" },
   ];
 
   return (
     <section className="py-4">
       <div className="container">
         <nav className="flex items-center justify-between">
+          {/* Logo */}
           <a
             href="https://www.shadcnblocks.com"
             className="flex items-center gap-2"
@@ -77,6 +55,8 @@ const Navbar = () => {
               Shadcnblocks.com
             </span>
           </a>
+
+          {/* Desktop Navigation Menu */}
           <NavigationMenu className="hidden lg:block">
             <NavigationMenuList>
               <NavigationMenuItem>
@@ -89,7 +69,7 @@ const Navbar = () => {
                         key={index}
                         className="rounded-md p-3 transition-colors hover:bg-muted/70"
                       >
-                        <div key={feature.title}>
+                        <div>
                           <p className="mb-1 font-semibold text-foreground">
                             {feature.title}
                           </p>
@@ -102,36 +82,38 @@ const Navbar = () => {
                   </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
+
               <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="#"
-                  className={navigationMenuTriggerStyle()}
-                >
+                <NavigationMenuLink href="#" className={navigationMenuTriggerStyle()}>
                   Products
                 </NavigationMenuLink>
               </NavigationMenuItem>
+
               <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="#"
-                  className={navigationMenuTriggerStyle()}
-                >
+                <NavigationMenuLink href="#" className={navigationMenuTriggerStyle()}>
                   Resources
                 </NavigationMenuLink>
               </NavigationMenuItem>
+
               <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="#"
-                  className={navigationMenuTriggerStyle()}
-                >
+                <NavigationMenuLink href="#" className={navigationMenuTriggerStyle()}>
                   Contact
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
+
+          {/* Desktop Buttons */}
           <div className="hidden items-center gap-4 lg:flex">
-            <Button variant="outline">Sign in</Button>
-            <Button>Start for free</Button>
+            <Button asChild variant="outline">
+              <Link to="/login">Sign in</Link>
+            </Button>
+            <Button asChild>
+              <Link to="/signup">Start for free</Link>
+            </Button>
           </div>
+
+          {/* Mobile Sheet */}
           <Sheet>
             <SheetTrigger asChild className="lg:hidden">
               <Button variant="outline" size="icon">
@@ -156,7 +138,9 @@ const Navbar = () => {
                   </a>
                 </SheetTitle>
               </SheetHeader>
+
               <div className="flex flex-col p-4">
+                {/* Mobile Accordion */}
                 <Accordion type="single" collapsible className="mt-4 mb-2">
                   <AccordionItem value="solutions" className="border-none">
                     <AccordionTrigger className="text-base hover:no-underline">
@@ -170,34 +154,34 @@ const Navbar = () => {
                             key={index}
                             className="rounded-md p-3 transition-colors hover:bg-muted/70"
                           >
-                            <div key={feature.title}>
-                              <p className="mb-1 font-semibold text-foreground">
-                                {feature.title}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {feature.description}
-                              </p>
-                            </div>
+                            <p className="mb-1 font-semibold text-foreground">
+                              {feature.title}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {feature.description}
+                            </p>
                           </a>
                         ))}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
+
+                {/* Other Mobile Links */}
                 <div className="flex flex-col gap-6">
-                  <a href="#" className="font-medium">
-                    Templates
-                  </a>
-                  <a href="#" className="font-medium">
-                    Blog
-                  </a>
-                  <a href="#" className="font-medium">
-                    Pricing
-                  </a>
+                  <a href="#" className="font-medium">Templates</a>
+                  <a href="#" className="font-medium">Blog</a>
+                  <a href="#" className="font-medium">Pricing</a>
                 </div>
+
+                {/* Mobile Buttons */}
                 <div className="mt-6 flex flex-col gap-4">
-                  <Button variant="outline">Sign in</Button>
-                  <Button>Start for free</Button>
+                  <Button asChild variant="outline">
+                    <Link to="/login">Sign in</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/signup">Start for Free</Link>
+                  </Button>
                 </div>
               </div>
             </SheetContent>
@@ -208,4 +192,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;;
+export default Navbar;
