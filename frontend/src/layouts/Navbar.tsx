@@ -38,7 +38,8 @@ const Navbar = () => {
   ];
 
   return (
-    <section className="py-4">
+    // Changed py-4 to my-4 for equal top and bottom margin
+    <section className="my-4">
       <div className="container">
         <nav className="flex items-center justify-between">
           {/* Logo */}
