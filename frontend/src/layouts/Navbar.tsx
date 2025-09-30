@@ -1,5 +1,3 @@
-"use client";
-
 import { MenuIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -29,33 +27,29 @@ import {
 
 const Navbar = () => {
   const features = [
-    { title: "Dashboard", description: "Overview of your activity", href: "#" },
-    { title: "Analytics", description: "Track your performance", href: "#" },
-    { title: "Settings", description: "Configure your preferences", href: "#" },
-    { title: "Integrations", description: "Connect with other tools", href: "#" },
-    { title: "Storage", description: "Manage your files", href: "#" },
-    { title: "Support", description: "Get help when needed", href: "#" },
+    { title: "Dashboard", description: "Overview of your activity", href: "/dashboard" },
+    { title: "Analytics", description: "Track your performance", href: "/analytics" },
+    { title: "Settings", description: "Configure your preferences", href: "/settings" },
+    { title: "Integrations", description: "Connect with other tools", href: "/integrations" },
+    { title: "Storage", description: "Manage your files", href: "/storage" },
+    { title: "Support", description: "Get help when needed", href: "/support" },
   ];
 
   return (
-    // Changed py-4 to my-4 for equal top and bottom margin
     <section className="my-4">
       <div className="container">
         <nav className="flex items-center justify-between">
           {/* Logo */}
-          <a
-            href="https://www.shadcnblocks.com"
-            className="flex items-center gap-2"
-          >
+          <Link to="/" className="flex items-center gap-2">
             <img
               src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg"
               className="max-h-8"
-              alt="Shadcn UI Navbar"
+              alt="Logo"
             />
             <span className="text-lg font-semibold tracking-tighter">
-              Shadcnblocks.com
+              MyApp
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation Menu */}
           <NavigationMenu className="hidden lg:block">
@@ -66,18 +60,20 @@ const Navbar = () => {
                   <div className="grid w-[600px] grid-cols-2 p-3">
                     {features.map((feature, index) => (
                       <NavigationMenuLink
-                        href={feature.href}
                         key={index}
+                        asChild
                         className="rounded-md p-3 transition-colors hover:bg-muted/70"
                       >
-                        <div>
-                          <p className="mb-1 font-semibold text-foreground">
-                            {feature.title}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {feature.description}
-                          </p>
-                        </div>
+                        <Link to={feature.href}>
+                          <div>
+                            <p className="mb-1 font-semibold text-foreground">
+                              {feature.title}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {feature.description}
+                            </p>
+                          </div>
+                        </Link>
                       </NavigationMenuLink>
                     ))}
                   </div>
@@ -85,20 +81,20 @@ const Navbar = () => {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuLink href="#" className={navigationMenuTriggerStyle()}>
-                  Products
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link to="/dashboard">Dashboard</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuLink href="#" className={navigationMenuTriggerStyle()}>
-                  Resources
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link to="/resources">Resources</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuLink href="#" className={navigationMenuTriggerStyle()}>
-                  Contact
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link to="/contact">Contact</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
@@ -124,19 +120,16 @@ const Navbar = () => {
             <SheetContent side="top" className="max-h-screen overflow-auto">
               <SheetHeader>
                 <SheetTitle>
-                  <a
-                    href="https://www.shadcnblocks.com"
-                    className="flex items-center gap-2"
-                  >
+                  <Link to="/" className="flex items-center gap-2">
                     <img
                       src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg"
                       className="max-h-8"
-                      alt="Shadcn UI Navbar"
+                      alt="Logo"
                     />
                     <span className="text-lg font-semibold tracking-tighter">
-                      Shadcnblocks.com
+                      MyApp
                     </span>
-                  </a>
+                  </Link>
                 </SheetTitle>
               </SheetHeader>
 
@@ -150,8 +143,8 @@ const Navbar = () => {
                     <AccordionContent>
                       <div className="grid md:grid-cols-2">
                         {features.map((feature, index) => (
-                          <a
-                            href={feature.href}
+                          <Link
+                            to={feature.href}
                             key={index}
                             className="rounded-md p-3 transition-colors hover:bg-muted/70"
                           >
@@ -161,7 +154,7 @@ const Navbar = () => {
                             <p className="text-sm text-muted-foreground">
                               {feature.description}
                             </p>
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     </AccordionContent>
@@ -170,15 +163,15 @@ const Navbar = () => {
 
                 {/* Other Mobile Links */}
                 <div className="flex flex-col gap-6">
-                  <a href="#" className="font-medium">Templates</a>
-                  <a href="#" className="font-medium">Blog</a>
-                  <a href="#" className="font-medium">Pricing</a>
+                  <Link to="/dashboard" className="font-medium">Dashboard</Link>
+                  <Link to="/blog" className="font-medium">Blog</Link>
+                  <Link to="/pricing" className="font-medium">Pricing</Link>
                 </div>
 
                 {/* Mobile Buttons */}
                 <div className="mt-6 flex flex-col gap-4">
                   <Button asChild variant="outline">
-                    <Link to="/login">Sign in</Link>
+                    <Link to="/dashboard">Dashboard</Link>
                   </Button>
                   <Button asChild>
                     <Link to="/signup">Start for Free</Link>

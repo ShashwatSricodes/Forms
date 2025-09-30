@@ -1,4 +1,6 @@
 "use client";
+import Navbar from "./components/Navbar";
+
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -76,6 +78,7 @@ export default function Dashboard() {
 
   return (
     <>
+ 
       <div className="w-full min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 pt-12 md:pt-16 mt-8">
         {/* Responsive header */}
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">

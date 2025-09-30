@@ -1,7 +1,6 @@
 // frontend/SignUp.tsx
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-// Assuming all your shadcn components are correctly imported:
 import {
   Card,
   CardHeader,
@@ -15,9 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
-
-// Set the correct backend URL for PORT 5000
-const BACKEND_URL = "http://localhost:5000/api/auth/signup";
+import { API } from "@/config/api"; // ✅ use centralized API config
 
 interface MessageState {
   type: "success" | "error";
@@ -28,8 +25,6 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // TypeScript fix
   const [message, setMessage] = useState<MessageState | null>(null);
 
   const handleSignup = async () => {
@@ -45,7 +40,7 @@ export default function SignUp() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(BACKEND_URL, {
+      const res = await fetch(API.SIGNUP, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -76,9 +71,7 @@ export default function SignUp() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md p-6 shadow-lg rounded-2xl">
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-2xl font-bold">
-            Create an Account
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">

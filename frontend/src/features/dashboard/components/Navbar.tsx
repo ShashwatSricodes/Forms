@@ -10,7 +10,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import Avatar components
 import { Bell, ChevronDown, Gift, LayoutDashboard, Plus } from "lucide-react"; // Import necessary icons
 
-export function DashboardNavbar() {
+export default function DashboardNavbar() {
   return (
     <nav className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
       {/* Left Section: Logo and Workspace Dropdown */}

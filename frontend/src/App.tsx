@@ -12,7 +12,7 @@ function App() {
   return (
     <>
       <div style={{ fontFamily: 'Geist, sans-serif' }}>
-        <Forms/>
+        
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -20,6 +20,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           {/* Add a specific route for the dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/forms" element={<Forms />} />
+
         </Routes>
         <Footer />
       </div>
