@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { MenuIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   Accordion,
@@ -26,6 +27,9 @@ import {
 } from "@/components/ui/sheet";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("authToken"));
+
   const features = [
     { title: "Dashboard", description: "Overview of your activity", href: "/dashboard" },
     { title: "Analytics", description: "Track your performance", href: "/analytics" },
@@ -34,6 +38,24 @@ const Navbar = () => {
     { title: "Storage", description: "Manage your files", href: "/storage" },
     { title: "Support", description: "Get help when needed", href: "/support" },
   ];
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setIsLoggedIn(!!localStorage.getItem("authToken"));
+    };
+
+    window.addEventListener("authChange", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("authChange", handleAuthChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    window.dispatchEvent(new Event("authChange")); // immediately update Navbar
+    navigate("/login");
+  };
 
   return (
     <section className="my-4">
@@ -46,33 +68,21 @@ const Navbar = () => {
               className="max-h-8"
               alt="Logo"
             />
-            <span className="text-lg font-semibold tracking-tighter">
-              MyApp
-            </span>
+            <span className="text-lg font-semibold tracking-tighter">MyApp</span>
           </Link>
 
-          {/* Desktop Navigation Menu */}
+          {/* Desktop Navigation */}
           <NavigationMenu className="hidden lg:block">
             <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Features</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <div className="grid w-[600px] grid-cols-2 p-3">
-                    {features.map((feature, index) => (
-                      <NavigationMenuLink
-                        key={index}
-                        asChild
-                        className="rounded-md p-3 transition-colors hover:bg-muted/70"
-                      >
+                    {features.map((feature, i) => (
+                      <NavigationMenuLink key={i} asChild className="rounded-md p-3 transition-colors hover:bg-muted/70">
                         <Link to={feature.href}>
-                          <div>
-                            <p className="mb-1 font-semibold text-foreground">
-                              {feature.title}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {feature.description}
-                            </p>
-                          </div>
+                          <p className="mb-1 font-semibold text-foreground">{feature.title}</p>
+                          <p className="text-sm text-muted-foreground">{feature.description}</p>
                         </Link>
                       </NavigationMenuLink>
                     ))}
@@ -80,34 +90,32 @@ const Navbar = () => {
                 </NavigationMenuContent>
               </NavigationMenuItem>
 
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                  <Link to="/dashboard">Dashboard</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                  <Link to="/resources">Resources</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                  <Link to="/contact">Contact</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+              {["/dashboard", "/resources", "/contact"].map((path) => (
+                <NavigationMenuItem key={path}>
+                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                    <Link to={path}>{path.replace("/", "")}</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
             </NavigationMenuList>
           </NavigationMenu>
 
           {/* Desktop Buttons */}
           <div className="hidden items-center gap-4 lg:flex">
-            <Button asChild variant="outline">
-              <Link to="/login">Sign in</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/signup">Start for free</Link>
-            </Button>
+            {!isLoggedIn ? (
+              <>
+                <Button asChild variant="outline">
+                  <Link to="/login">Sign in</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/signup">Start for free</Link>
+                </Button>
+              </>
+            ) : (
+              <Button onClick={handleLogout} className="bg-black text-white hover:bg-zinc-800">
+                Logout
+              </Button>
+            )}
           </div>
 
           {/* Mobile Sheet */}
@@ -126,34 +134,21 @@ const Navbar = () => {
                       className="max-h-8"
                       alt="Logo"
                     />
-                    <span className="text-lg font-semibold tracking-tighter">
-                      MyApp
-                    </span>
+                    <span className="text-lg font-semibold tracking-tighter">MyApp</span>
                   </Link>
                 </SheetTitle>
               </SheetHeader>
 
               <div className="flex flex-col p-4">
-                {/* Mobile Accordion */}
                 <Accordion type="single" collapsible className="mt-4 mb-2">
                   <AccordionItem value="solutions" className="border-none">
-                    <AccordionTrigger className="text-base hover:no-underline">
-                      Features
-                    </AccordionTrigger>
+                    <AccordionTrigger className="text-base hover:no-underline">Features</AccordionTrigger>
                     <AccordionContent>
                       <div className="grid md:grid-cols-2">
-                        {features.map((feature, index) => (
-                          <Link
-                            to={feature.href}
-                            key={index}
-                            className="rounded-md p-3 transition-colors hover:bg-muted/70"
-                          >
-                            <p className="mb-1 font-semibold text-foreground">
-                              {feature.title}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {feature.description}
-                            </p>
+                        {features.map((feature, i) => (
+                          <Link key={i} to={feature.href} className="rounded-md p-3 transition-colors hover:bg-muted/70">
+                            <p className="mb-1 font-semibold text-foreground">{feature.title}</p>
+                            <p className="text-sm text-muted-foreground">{feature.description}</p>
                           </Link>
                         ))}
                       </div>
@@ -161,21 +156,27 @@ const Navbar = () => {
                   </AccordionItem>
                 </Accordion>
 
-                {/* Other Mobile Links */}
                 <div className="flex flex-col gap-6">
                   <Link to="/dashboard" className="font-medium">Dashboard</Link>
                   <Link to="/blog" className="font-medium">Blog</Link>
                   <Link to="/pricing" className="font-medium">Pricing</Link>
                 </div>
 
-                {/* Mobile Buttons */}
                 <div className="mt-6 flex flex-col gap-4">
-                  <Button asChild variant="outline">
-                    <Link to="/dashboard">Dashboard</Link>
-                  </Button>
-                  <Button asChild>
-                    <Link to="/signup">Start for Free</Link>
-                  </Button>
+                  {!isLoggedIn ? (
+                    <>
+                      <Button asChild variant="outline">
+                        <Link to="/login">Sign in</Link>
+                      </Button>
+                      <Button asChild>
+                        <Link to="/signup">Start for Free</Link>
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={handleLogout} className="bg-black text-white hover:bg-zinc-800">
+                      Logout
+                    </Button>
+                  )}
                 </div>
               </div>
             </SheetContent>

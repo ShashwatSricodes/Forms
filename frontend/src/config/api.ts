@@ -4,3 +4,4 @@ export const API = {
   SIGNUP: `${BASE_URL}/auth/signup`,
   LOGIN: `${BASE_URL}/auth/login`,
 };
+

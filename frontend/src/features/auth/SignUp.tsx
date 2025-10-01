@@ -1,5 +1,5 @@
-// frontend/SignUp.tsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import {
   Card,
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
-import { API } from "@/config/api"; // ✅ use centralized API config
+import { API } from "@/config/api";
 
 interface MessageState {
   type: "success" | "error";
@@ -22,6 +22,7 @@ interface MessageState {
 }
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -29,10 +30,7 @@ export default function SignUp() {
 
   const handleSignup = async () => {
     if (!email || !password) {
-      setMessage({
-        type: "error",
-        text: "Please enter both email and password.",
-      });
+      setMessage({ type: "error", text: "Please enter both email and password." });
       return;
     }
 
@@ -50,18 +48,19 @@ export default function SignUp() {
 
       if (res.ok) {
         setMessage({ type: "success", text: data.message });
+
+        // ✅ Save token to localStorage
+        localStorage.setItem("authToken", data.token || "loggedIn");
+        window.dispatchEvent(new Event("authChange"));
+
+        // Navigate to dashboard
+        navigate("/dashboard");
       } else {
-        setMessage({
-          type: "error",
-          text: data.error || "An unexpected error occurred during signup.",
-        });
+        setMessage({ type: "error", text: data.error || "Signup failed" });
       }
     } catch (err) {
       console.error("Network or Fetch Error:", err);
-      setMessage({
-        type: "error",
-        text: "Could not connect to the backend server. Is it running?",
-      });
+      setMessage({ type: "error", text: "Could not connect to the server." });
     } finally {
       setIsLoading(false);
     }
@@ -86,6 +85,7 @@ export default function SignUp() {
               disabled={isLoading}
             />
           </div>
+
           <div>
             <Label htmlFor="password">Password</Label>
             <Input
@@ -99,20 +99,12 @@ export default function SignUp() {
           </div>
 
           {message && (
-            <p
-              className={`text-sm font-medium ${
-                message.type === "success" ? "text-green-600" : "text-red-600"
-              }`}
-            >
+            <p className={`text-sm font-medium ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
               {message.text}
             </p>
           )}
 
-          <Button
-            className="w-full"
-            onClick={handleSignup}
-            disabled={isLoading}
-          >
+          <Button className="w-full" onClick={handleSignup} disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
