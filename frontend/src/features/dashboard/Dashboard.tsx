@@ -1,7 +1,5 @@
 "use client";
 import Navbar from "./components/Navbar";
-
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -78,10 +76,9 @@ export default function Dashboard() {
 
   return (
     <>
- 
-      <div className="w-full min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 pt-12 md:pt-16 mt-8">
+      <div className="w-full min-h-screen bg-white md:bg-gray-50 pt-12 md:pt-16 mt-8 md:rounded-t-xl">
         {/* Responsive header */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 px-4 sm:px-6 lg:px-8">
           {/* Left buttons */}
           <div className="flex items-center gap-2 flex-wrap">
             <Button variant="outline" className="flex items-center gap-2">
@@ -122,7 +119,7 @@ export default function Dashboard() {
         </header>
 
         {/* Responsive grid of forms */}
-        <main>
+        <main className="px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {forms.map((form) => (
               <FormCard key={form.id} form={form} />

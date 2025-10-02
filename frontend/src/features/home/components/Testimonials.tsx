@@ -76,7 +76,7 @@ export default function Testimonials() {
         <div className="container mx-auto max-w-6xl">
           {/* Section Header */}
           <div className="flex flex-col items-center text-center space-y-4 mb-12">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
+            <h1 className="text-4xl font-normal tracking-tighter sm:text-5xl md:text-6xl">
               Meet our happy clients
             </h1>
             <p className="max-w-[700px] text-muted-foreground md:text-xl">

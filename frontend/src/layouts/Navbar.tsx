@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; 
 import { MenuIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -79,7 +79,11 @@ const Navbar = () => {
                 <NavigationMenuContent>
                   <div className="grid w-[600px] grid-cols-2 p-3">
                     {features.map((feature, i) => (
-                      <NavigationMenuLink key={i} asChild className="rounded-md p-3 transition-colors hover:bg-muted/70">
+                      <NavigationMenuLink
+                        key={i}
+                        asChild
+                        className="rounded-md p-3 transition-colors hover:bg-muted/70"
+                      >
                         <Link to={feature.href}>
                           <p className="mb-1 font-semibold text-foreground">{feature.title}</p>
                           <p className="text-sm text-muted-foreground">{feature.description}</p>
@@ -90,13 +94,17 @@ const Navbar = () => {
                 </NavigationMenuContent>
               </NavigationMenuItem>
 
-              {["/dashboard", "/resources", "/contact"].map((path) => (
-                <NavigationMenuItem key={path}>
-                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to={path}>{path.replace("/", "")}</Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
+              {["/dashboard", "/resources", "/contact"].map((path) => {
+                const label = path.replace("/", "");
+                const capitalized = label.charAt(0).toUpperCase() + label.slice(1);
+                return (
+                  <NavigationMenuItem key={path}>
+                    <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                      <Link to={path}>{capitalized}</Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                );
+              })}
             </NavigationMenuList>
           </NavigationMenu>
 
@@ -112,7 +120,10 @@ const Navbar = () => {
                 </Button>
               </>
             ) : (
-              <Button onClick={handleLogout} className="bg-black text-white hover:bg-zinc-800">
+              <Button
+                onClick={handleLogout}
+                className="bg-black text-white hover:bg-zinc-800"
+              >
                 Logout
               </Button>
             )}
@@ -142,13 +153,21 @@ const Navbar = () => {
               <div className="flex flex-col p-4">
                 <Accordion type="single" collapsible className="mt-4 mb-2">
                   <AccordionItem value="solutions" className="border-none">
-                    <AccordionTrigger className="text-base hover:no-underline">Features</AccordionTrigger>
+                    <AccordionTrigger className="text-base hover:no-underline">
+                      Features
+                    </AccordionTrigger>
                     <AccordionContent>
                       <div className="grid md:grid-cols-2">
                         {features.map((feature, i) => (
-                          <Link key={i} to={feature.href} className="rounded-md p-3 transition-colors hover:bg-muted/70">
+                          <Link
+                            key={i}
+                            to={feature.href}
+                            className="rounded-md p-3 transition-colors hover:bg-muted/70"
+                          >
                             <p className="mb-1 font-semibold text-foreground">{feature.title}</p>
-                            <p className="text-sm text-muted-foreground">{feature.description}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {feature.description}
+                            </p>
                           </Link>
                         ))}
                       </div>
@@ -157,9 +176,15 @@ const Navbar = () => {
                 </Accordion>
 
                 <div className="flex flex-col gap-6">
-                  <Link to="/dashboard" className="font-medium">Dashboard</Link>
-                  <Link to="/blog" className="font-medium">Blog</Link>
-                  <Link to="/pricing" className="font-medium">Pricing</Link>
+                  <Link to="/dashboard" className="font-medium">
+                    Dashboard
+                  </Link>
+                  <Link to="/blog" className="font-medium">
+                    Blog
+                  </Link>
+                  <Link to="/pricing" className="font-medium">
+                    Pricing
+                  </Link>
                 </div>
 
                 <div className="mt-6 flex flex-col gap-4">
@@ -173,7 +198,10 @@ const Navbar = () => {
                       </Button>
                     </>
                   ) : (
-                    <Button onClick={handleLogout} className="bg-black text-white hover:bg-zinc-800">
+                    <Button
+                      onClick={handleLogout}
+                      className="bg-black text-white hover:bg-zinc-800"
+                    >
                       Logout
                     </Button>
                   )}

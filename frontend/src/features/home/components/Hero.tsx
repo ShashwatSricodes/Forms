@@ -5,7 +5,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 interface Hero7Props {
-  heading?: string;
+  heading?: React.ReactNode;
   description?: string;
   button?: {
     text: string;
@@ -22,10 +22,22 @@ interface Hero7Props {
 }
 
 const Hero7 = ({
-  heading = "A Collection of Components Built With Shadcn & Tailwind",
-  description = "Finely crafted components built with React, Tailwind and Shadcn UI. Developers can copy and paste these blocks directly into their project.",
+  heading = (
+    <>
+      Forms reimagined for{" "}
+      {/* UPDATED: Nested spans to keep text straight and box slanted */}
+      <span className="inline-block -rotate-2 rounded-sm bg-yellow-200 px-2">
+        <span className="inline-block rotate-2 text-black">simplicity</span>
+      </span>{" "}
+      and{" "}
+      <span className="inline-block -rotate-2 rounded-sm bg-blue-200 px-2">
+        <span className="inline-block rotate-2 text-black">design</span>
+      </span>
+    </>
+  ),
+  description = "Create, share, and collect responses with clean, minimal forms — no clutter, no fuss.",
   button = {
-    text: "Discover all components",
+    text: "Create your first form",
     url: "https://www.shadcnblocks.com",
   },
   reviews = {
@@ -44,8 +56,12 @@ const Hero7 = ({
     <section className="py-32">
       <div className="container text-center">
         <div className="mx-auto flex max-w-5xl flex-col gap-6">
-          <h1 className="text-3xl font-extrabold lg:text-6xl">{heading}</h1>
-          <p className="text-muted-foreground text-balance lg:text-lg">{description}</p>
+          <h1 className="font-['DM_Sans'] text-3xl font-medium lg:text-6xl">
+            {heading}
+          </h1>
+          <p className="text-muted-foreground text-balance lg:text-lg">
+            {description}
+          </p>
         </div>
         <Button asChild size="lg" className="mt-10">
           <a href={button.url}>{button.text}</a>
@@ -61,9 +77,14 @@ const Hero7 = ({
           <div>
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, index) => (
-                <Star key={index} className="size-5 fill-yellow-400 text-yellow-400" />
+                <Star
+                  key={index}
+                  className="size-5 fill-yellow-400 text-yellow-400"
+                />
               ))}
-              <span className="mr-1 font-semibold">{reviews.rating?.toFixed(1)}</span>
+              <span className="mr-1 font-semibold">
+                {reviews.rating?.toFixed(1)}
+              </span>
             </div>
             <p className="text-muted-foreground text-left font-medium">
               from {reviews.count}+ reviews
