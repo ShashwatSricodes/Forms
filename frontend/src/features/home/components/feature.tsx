@@ -56,7 +56,7 @@ export default function FeaturesGrid() {
   return (
     <section className="w-full py-16 px-6 mt-15">
       <div className="max-w-6xl mx-auto">
-       <h2 className="text-4xl sm:text-5xl font-normal tracking-tighter mb-20 text-center">
+       <h2 className="text-4xl sm:text-5xl font-normal tracking-tighter mb-20 mt-10 text-center">
           The simplest way to build{" "}
           <span className="relative inline-block">
             forms
