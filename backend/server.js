@@ -3,6 +3,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./src/routes/authRoutes.js";
+import formRoutes from "./src/routes/formRoutes.js";
+import responseRoutes from "./src/routes/responseRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -30,6 +32,8 @@ app.get("/", (req, res) => {
 
 // Route registration
 app.use("/api/auth", authRoutes);
+app.use("/api/forms", formRoutes);
+app.use("/api/responses", responseRoutes);
 
 // 404 handler
 app.use((req, res) => {
