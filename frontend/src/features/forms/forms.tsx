@@ -71,7 +71,7 @@ const AutoResizeTextarea = React.forwardRef<
 });
 AutoResizeTextarea.displayName = "AutoResizeTextarea";
 
-// --- UPDATED QUESTION CARD COMPONENT ---
+// --- QUESTION CARD COMPONENT ---
 const QuestionCard = ({
   question,
   onUpdate,
@@ -117,18 +117,17 @@ const QuestionCard = ({
       onClick={onClick}
       className={cn(
         "cursor-pointer transition-all duration-300 border bg-white shadow-sm",
-        isActive ? "border-primary shadow-lg" : "border-border"
+        isActive ? "border-primary " : "border-border"
       )}
     >
       <CardHeader className="p-4 pb-2">
-        {/* UPDATED: Question Title font size now matches options */}
+        {/* Question Title: Bold and same size as options */}
         <AutoResizeTextarea
           placeholder="Type your question here"
           value={question.text}
           onChange={(e) => onUpdate({ ...question, text: e.target.value })}
           rows={1}
-          className="text-base font-bold w-full bg-transparent border-none focus-visible:ring-0 p-1"
-
+          className="text-base font-bold w-full bg-transparent border-none focus-visible:ring-0 p-2 leading-normal"
         />
       </CardHeader>
 
@@ -172,7 +171,7 @@ const QuestionCard = ({
             <Input
               placeholder="Short answer text..."
               readOnly
-              className="text-sm p-2 border-b-2 border-dotted rounded-none w-1/2 focus-visible:ring-0 bg-transparent"
+              className="text-base p-2 border-b-2 border-dotted rounded-none w-1/2 focus-visible:ring-0 bg-transparent"
             />
           )}
 
@@ -180,7 +179,7 @@ const QuestionCard = ({
             <Textarea
               placeholder="Long answer text..."
               readOnly
-              className="text-sm p-2 border-b-2 border-dotted rounded-none min-h-[40px] focus-visible:ring-0 bg-transparent resize-none"
+              className="text-base p-2 border-b-2 border-dotted rounded-none min-h-[40px] focus-visible:ring-0 bg-transparent resize-none"
             />
           )}
         </div>
