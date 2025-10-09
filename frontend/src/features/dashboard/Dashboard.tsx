@@ -24,12 +24,7 @@ import {
 import { TemplateModal } from "./components/Popup";
 import { getUserForms, deleteForm } from "@/lib/api/form";
 import type { Form } from "@/types/form";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
+import { supabase } from "@/config/supabaseClient";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -40,26 +35,33 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string }>({
-    name: "User",
-    email: "user@example.com",
-  });
+  const [user, setUser] = useState<{ name: string; email: string } | null>(
+    null
+  );
 
   // ✅ Fetch user info from Supabase
   useEffect(() => {
     const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        setUser({
-          name: data.user.user_metadata?.full_name || "User",
-          email: data.user.email || "user@example.com",
-        });
-      }
-    };
-    fetchUser();
-  }, []);
+      const { data, error } = await supabase.auth.getUser();
 
-  // ✅ Load forms
+      if (error || !data?.user) {
+        console.warn(
+          "⚠️ User not found or session expired. Redirecting to login..."
+        );
+        navigate("/login"); // optional redirect
+        return;
+      }
+
+      setUser({
+        name: data.user.user_metadata?.full_name || "User",
+        email: data.user.email || "user@example.com",
+      });
+    };
+
+    fetchUser();
+  }, [navigate]);
+
+  // ✅ Load forms (authenticated)
   useEffect(() => {
     loadForms();
   }, []);
@@ -69,9 +71,14 @@ export default function Dashboard() {
     try {
       const data = await getUserForms();
       setForms(data || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load forms:", err);
-      alert("Failed to load forms");
+      if (err.message?.toLowerCase().includes("token")) {
+        alert("Session expired. Please log in again.");
+        navigate("/login");
+      } else {
+        alert("Failed to load forms");
+      }
     } finally {
       setLoading(false);
     }
@@ -121,24 +128,26 @@ export default function Dashboard() {
         {/* --- Header --- */}
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 px-4 sm:px-6 lg:px-8">
           {/* --- User Info --- */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <Button
-              variant="outline"
-              className="flex items-center gap-2.5 px-4 py-3 cursor-default h-16 w-full sm:w-[280px] justify-start shadow-sm hover:shadow-md transition-all"
-            >
-              <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center text-base font-semibold uppercase text-gray-700">
-                {user.name?.charAt(0) || "U"}
-              </div>
-              <div className="flex flex-col items-start text-left">
-                <span className="font-semibold text-base leading-tight text-gray-900">
-                  {user.name}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {user.email}
-                </span>
-              </div>
-            </Button>
-          </div>
+          {user && (
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2.5 px-4 py-3 cursor-default h-16 w-full sm:w-[280px] justify-start shadow-sm hover:shadow-md transition-all"
+              >
+                <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center text-base font-semibold uppercase text-gray-700">
+                  {user.name?.charAt(0) || "U"}
+                </div>
+                <div className="flex flex-col items-start text-left">
+                  <span className="font-semibold text-base leading-tight text-gray-900">
+                    {user.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
+                </div>
+              </Button>
+            </div>
+          )}
 
           {/* --- Controls --- */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
@@ -267,7 +276,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* If search filtered everything out */}
           {filteredForms.length === 0 && forms.length > 0 && (
             <div className="text-center py-16">
               <p className="text-muted-foreground">

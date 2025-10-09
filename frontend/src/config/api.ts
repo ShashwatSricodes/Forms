@@ -1,4 +1,6 @@
 // frontend/src/config/api.ts
+import { supabase } from "@/config/supabaseClient";
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 if (!BASE_URL) {
@@ -30,24 +32,31 @@ export const API = {
     `${BASE_URL}/responses/${responseId}`,
 };
 
-// Helper function for authenticated API calls
+// ✅ Helper for authenticated API calls
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem("authToken");
+  // 🔒 Always get the *current* Supabase session (auto-refreshed if needed)
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...options.headers,
-  };
+  if (error || !session?.access_token) {
+    console.error("⚠️ No valid Supabase session found");
+    throw new Error("Invalid or expired token");
+  }
 
-  const response = await fetch(url, {
+  const res = await fetch(url, {
     ...options,
-    headers,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+      ...(options.headers || {}),
+    },
   });
 
-  const data = await response.json();
+  const data = await res.json();
 
-  if (!response.ok) {
+  if (!res.ok) {
     throw new Error(data.error || "Request failed");
   }
 

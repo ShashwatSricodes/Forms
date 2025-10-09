@@ -10,26 +10,21 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// 1. Define the type for TemplateCard's props
 type TemplateCardProps = {
   title: string;
-  bgColor?: string; // optional
+  bgColor?: string;
+  onSelect: () => void;
 };
 
-// 2. TemplateCard component
-function TemplateCard({ title, bgColor = "bg-gray-100" }: TemplateCardProps) {
-  const navigate = useNavigate(); // React Router navigation
+function TemplateCard({
+  title,
+  bgColor = "bg-gray-100",
+  onSelect,
+}: TemplateCardProps) {
   const isBlank = title === "Blank Form";
 
-  const handleClick = () => {
-    if (isBlank) {
-      navigate("/forms"); // Navigate to Forms page
-    }
-    // You can add else logic here for other templates
-  };
-
   return (
-    <div className="cursor-pointer group" onClick={handleClick}>
+    <div className="cursor-pointer group" onClick={onSelect}>
       <div
         className={`aspect-[4/3] rounded-md flex items-center justify-center transition-transform group-hover:scale-105 ${bgColor}`}
       >
@@ -42,14 +37,14 @@ function TemplateCard({ title, bgColor = "bg-gray-100" }: TemplateCardProps) {
   );
 }
 
-// 3. Define the type for TemplateModal's props
 type TemplateModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-// 4. TemplateModal component
 export function TemplateModal({ isOpen, onOpenChange }: TemplateModalProps) {
+  const navigate = useNavigate();
+
   const templates = [
     { title: "Blank Form" },
     { title: "Job application template", bgColor: "bg-yellow-200" },
@@ -61,6 +56,15 @@ export function TemplateModal({ isOpen, onOpenChange }: TemplateModalProps) {
     { title: "Contract Consulting Form...", bgColor: "bg-sky-200" },
   ];
 
+  const handleTemplateSelect = (title: string) => {
+    if (title === "Blank Form") {
+      onOpenChange(false); // close modal first
+      navigate("/forms/create"); // go to create form page
+    } else {
+      alert(`"${title}" template coming soon!`);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl p-8">
@@ -69,10 +73,7 @@ export function TemplateModal({ isOpen, onOpenChange }: TemplateModalProps) {
             Select a template
           </DialogTitle>
           <div className="text-center">
-            <a
-              href="#"
-              className="text-sm text-blue-600 hover:underline"
-            >
+            <a href="#" className="text-sm text-blue-600 hover:underline">
               ...or import from Typeform
             </a>
           </div>
@@ -89,6 +90,7 @@ export function TemplateModal({ isOpen, onOpenChange }: TemplateModalProps) {
               key={template.title}
               title={template.title}
               bgColor={template.bgColor}
+              onSelect={() => handleTemplateSelect(template.title)}
             />
           ))}
         </div>
