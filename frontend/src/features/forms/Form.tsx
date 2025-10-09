@@ -206,13 +206,28 @@ export default function Form() {
     setSaving(true);
     try {
       let currentFormId = formId;
+
+      // Create or update the form with the current settings
       if (!isEditMode) {
         const newForm = await createForm(title, description);
         currentFormId = newForm.id;
+        // Optionally update is_public after creation if needed
+        if (isPublic !== undefined) {
+          await updateForm(currentFormId, {
+            title,
+            description,
+            is_public: isPublic,
+          });
+        }
       } else {
-        await updateForm(formId!, { title, description, is_public: isPublic });
+        await updateForm(formId!, {
+          title,
+          description,
+          is_public: isPublic,
+        });
       }
 
+      // Add questions to the form
       if (currentFormId) {
         for (const q of questions) {
           if (!q.text.trim()) continue;
@@ -229,13 +244,38 @@ export default function Form() {
         }
       }
 
-      alert("Form saved successfully!");
+      alert(
+        `Form saved successfully! Status: ${isPublic ? "Public" : "Private"}`
+      );
       navigate("/dashboard");
     } catch (error) {
       console.error("Failed to save form:", error);
       alert("Failed to save form");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle saving settings from the dialog
+  const handleSaveSettings = async () => {
+    if (!title.trim()) {
+      alert("Please enter a form title");
+      return;
+    }
+
+    try {
+      if (isEditMode && formId) {
+        await updateForm(formId, {
+          title,
+          description,
+          is_public: isPublic,
+        });
+        alert("Settings saved successfully!");
+      }
+      setSettingsOpen(false);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      alert("Failed to save settings");
     }
   };
 
@@ -247,8 +287,9 @@ export default function Form() {
         <div className="w-full max-w-3xl space-y-8">
           {/* Top Bar */}
           <div className="flex justify-between items-center">
-            <Button variant="ghost" onClick={() => navigate("/forms")}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            {/* Fixed: Navigate to dashboard instead of /forms */}
+            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
             </Button>
             <div className="flex gap-2">
               {isEditMode && (
@@ -271,32 +312,49 @@ export default function Form() {
                   </DialogHeader>
                   <Card className="border bg-white shadow-sm mt-4">
                     <CardContent className="p-4 space-y-4">
-                      <Input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Form title"
-                      />
-                      <Textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Form description"
-                        rows={2}
-                      />
+                      <div className="space-y-2">
+                        <Label htmlFor="form-title">Form Title</Label>
+                        <Input
+                          id="form-title"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="Form title"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="form-description">Description</Label>
+                        <Textarea
+                          id="form-description"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Form description"
+                          rows={2}
+                        />
+                      </div>
                       <div className="flex items-center gap-2">
                         <Switch
                           id="is-public"
                           checked={isPublic}
                           onCheckedChange={setIsPublic}
                         />
-                        <Label htmlFor="is-public">Make form public</Label>
+                        <Label htmlFor="is-public">
+                          Make form public {isPublic ? "(Public)" : "(Private)"}
+                        </Label>
                       </div>
-                      {/* Removed Save Settings button here */}
+                      {/* Add Save Settings button for existing forms */}
+                      {isEditMode && (
+                        <Button onClick={handleSaveSettings} className="w-full">
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Settings
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 </DialogContent>
               </Dialog>
             </div>
           </div>
+
           {/* Title & Description */}
           <div className="space-y-3 text-center">
             <Input
@@ -348,6 +406,11 @@ export default function Form() {
               <Save className="h-4 w-4 mr-2" />
               {saving ? "Saving..." : "Save Form"}
             </Button>
+          </div>
+
+          {/* Status indicator */}
+          <div className="text-center text-sm text-muted-foreground">
+            Current status: {isPublic ? "Public" : "Private"}
           </div>
         </div>
       </div>
