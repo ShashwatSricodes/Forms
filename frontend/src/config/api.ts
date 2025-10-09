@@ -1,4 +1,4 @@
-// src/config/api.ts
+// frontend/src/config/api.ts
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 if (!BASE_URL) {
@@ -6,34 +6,50 @@ if (!BASE_URL) {
 }
 
 export const API = {
+  // Auth
   SIGNUP: `${BASE_URL}/auth/signup`,
   LOGIN: `${BASE_URL}/auth/login`,
+
+  // Forms
+  FORMS: `${BASE_URL}/forms`,
+  FORM_BY_ID: (id: string) => `${BASE_URL}/forms/${id}`,
+
+  // Questions
+  ADD_QUESTION: (formId: string) => `${BASE_URL}/forms/${formId}/questions`,
+  UPDATE_QUESTION: (questionId: string) =>
+    `${BASE_URL}/forms/questions/${questionId}`,
+  DELETE_QUESTION: (questionId: string) =>
+    `${BASE_URL}/forms/questions/${questionId}`,
+
+  // Responses
+  SUBMIT_RESPONSE: (formId: string) => `${BASE_URL}/responses/${formId}/submit`,
+  FORM_RESPONSES: (formId: string) => `${BASE_URL}/responses/${formId}`,
+  RESPONSE_BY_ID: (responseId: string) =>
+    `${BASE_URL}/responses/single/${responseId}`,
+  DELETE_RESPONSE: (responseId: string) =>
+    `${BASE_URL}/responses/${responseId}`,
 };
 
-// Helper function for API calls (optional but recommended)
-export const fetchAPI = async (url: string, options: RequestInit = {}) => {
+// Helper function for authenticated API calls
+export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   const token = localStorage.getItem("authToken");
 
-  const defaultHeaders: HeadersInit = {
+  const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
   };
 
-  const config: RequestInit = {
+  const response = await fetch(url, {
     ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-  };
+    headers,
+  });
 
-  try {
-    const response = await fetch(url, config);
-    const data = await response.json();
+  const data = await response.json();
 
-    return { response, data };
-  } catch (error) {
-    console.error("API Error:", error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(data.error || "Request failed");
   }
+
+  return data;
 };
