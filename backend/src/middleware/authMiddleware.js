@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Create client with anon key for token verification
+// Create a client for token verification (using anon key, not service key)
 const supabaseAuth = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY
