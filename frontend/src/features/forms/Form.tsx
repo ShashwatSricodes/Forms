@@ -12,13 +12,6 @@ import {
   Copy,
   GripVertical,
   X,
-  MessageSquare,
-  TextCursorInput,
-  List,
-  Calendar,
-  Clock,
-  CheckSquare,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,21 +48,18 @@ import {
   addQuestion,
 } from "../../lib/api/form";
 import type { FormWithQuestions, QuestionType } from "../../types/form";
+import { questionTypeConfig } from "@/lib/questionTypes";
 
 type LocalOption = { id: string; text: string };
 type LocalQuestion = {
   id: string;
   text: string;
-  type:
-    | "short_text"
-    | "long_text"
-    | "multiple_choice"
-    | "checkboxes"
-    | "dropdown"
-    | "date"
-    | "time";
+  type: QuestionType;
   options: LocalOption[];
   required: boolean;
+  rating_scale?: number;
+  file_types?: string[];
+  max_file_size?: number;
   isSaved?: boolean;
 };
 
@@ -116,13 +106,16 @@ export default function Form() {
       const localQuestions: LocalQuestion[] = data.questions.map((q) => ({
         id: q.id,
         text: q.question_text,
-        type: mapApiTypeToLocal(q.question_type),
+        type: q.question_type,
         options:
           q.options?.map((opt) => ({
             id: opt.id,
             text: opt.option_text,
           })) || [],
         required: q.is_required,
+        rating_scale: q.rating_scale,
+        file_types: q.file_types,
+        max_file_size: q.max_file_size,
       }));
       setQuestions(localQuestions);
       setActiveQuestionId(localQuestions[0]?.id || null);
@@ -133,27 +126,6 @@ export default function Form() {
       setLoading(false);
     }
   };
-
-  const mapApiTypeToLocal = (apiType: QuestionType): LocalQuestion["type"] => {
-    switch (apiType) {
-      case "long_text":
-        return "long_text";
-      case "multiple_choice":
-        return "multiple_choice";
-      case "checkboxes":
-        return "checkboxes";
-      case "dropdown":
-        return "dropdown";
-      case "date":
-        return "date";
-      case "time":
-        return "time";
-      default:
-        return "short_text";
-    }
-  };
-
-  const mapLocalTypeToApi = (type: LocalQuestion["type"]): QuestionType => type;
 
   const addQuestionHandler = () => {
     const newQuestion: LocalQuestion = {
@@ -207,11 +179,9 @@ export default function Form() {
     try {
       let currentFormId = formId;
 
-      // Create or update the form with the current settings
       if (!isEditMode) {
         const newForm = await createForm(title, description);
         currentFormId = newForm.id;
-        // Optionally update is_public after creation if needed
         if (isPublic !== undefined) {
           await updateForm(currentFormId, {
             title,
@@ -227,20 +197,42 @@ export default function Form() {
         });
       }
 
-      // Add questions to the form
       if (currentFormId) {
         for (const q of questions) {
           if (!q.text.trim()) continue;
-          await addQuestion(currentFormId, {
+
+          const questionData: any = {
             question_text: q.text,
-            question_type: mapLocalTypeToApi(q.type),
+            question_type: q.type,
             is_required: q.required,
-            options:
-              ["multiple_choice", "checkboxes", "dropdown"].includes(q.type) &&
-              q.options.length > 0
-                ? q.options.map((o) => o.text)
-                : undefined,
-          });
+          };
+
+          // Add options for choice-based questions
+          if (
+            ["multiple_choice", "checkboxes", "dropdown"].includes(q.type) &&
+            q.options.length > 0
+          ) {
+            questionData.options = q.options.map((o) => o.text);
+          }
+
+          // Add rating scale for rating questions
+          if (q.type === "rating_5" || q.type === "rating_10") {
+            questionData.rating_scale =
+              q.rating_scale || (q.type === "rating_5" ? 5 : 10);
+          }
+
+          // Add file constraints for file upload
+          if (q.type === "file_upload") {
+            questionData.file_types = q.file_types || [
+              "pdf",
+              "jpg",
+              "png",
+              "docx",
+            ];
+            questionData.max_file_size = q.max_file_size || 5242880;
+          }
+
+          await addQuestion(currentFormId, questionData);
         }
       }
 
@@ -256,7 +248,6 @@ export default function Form() {
     }
   };
 
-  // Handle saving settings from the dialog
   const handleSaveSettings = async () => {
     if (!title.trim()) {
       alert("Please enter a form title");
@@ -287,7 +278,6 @@ export default function Form() {
         <div className="w-full max-w-3xl space-y-8">
           {/* Top Bar */}
           <div className="flex justify-between items-center">
-            {/* Fixed: Navigate to dashboard instead of /forms */}
             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
             </Button>
@@ -341,7 +331,6 @@ export default function Form() {
                           Make form public {isPublic ? "(Public)" : "(Private)"}
                         </Label>
                       </div>
-                      {/* Add Save Settings button for existing forms */}
                       {isEditMode && (
                         <Button onClick={handleSaveSettings} className="w-full">
                           <Save className="h-4 w-4 mr-2" />
@@ -408,7 +397,6 @@ export default function Form() {
             </Button>
           </div>
 
-          {/* Status indicator */}
           <div className="text-center text-sm text-muted-foreground">
             Current status: {isPublic ? "Public" : "Private"}
           </div>
@@ -463,6 +451,13 @@ function QuestionCard({
     });
   };
 
+  const needsOptions = ["multiple_choice", "checkboxes", "dropdown"].includes(
+    question.type
+  );
+  const isRating =
+    question.type === "rating_5" || question.type === "rating_10";
+  const isFileUpload = question.type === "file_upload";
+
   return (
     <Card
       onClick={onClick}
@@ -483,9 +478,8 @@ function QuestionCard({
           className="p-4 text-lg border-2 border-gray-200 focus:border-primary rounded-xl"
         />
 
-        {["multiple_choice", "checkboxes", "dropdown"].includes(
-          question.type
-        ) && (
+        {/* Options for choice-based questions */}
+        {needsOptions && (
           <div className="space-y-2">
             {question.options.map((opt) => (
               <div key={opt.id} className="flex items-center gap-2 group">
@@ -511,14 +505,97 @@ function QuestionCard({
           </div>
         )}
 
+        {/* Preview for simple input types */}
         {question.type === "short_text" && (
           <Input placeholder="Short answer text..." readOnly />
         )}
         {question.type === "long_text" && (
           <Textarea placeholder="Long answer text..." readOnly rows={3} />
         )}
+        {question.type === "email" && (
+          <Input type="email" placeholder="email@example.com" readOnly />
+        )}
+        {question.type === "phone" && (
+          <Input type="tel" placeholder="+1 (555) 000-0000" readOnly />
+        )}
+        {question.type === "url" && (
+          <Input type="url" placeholder="https://example.com" readOnly />
+        )}
         {question.type === "date" && <Input type="date" readOnly />}
         {question.type === "time" && <Input type="time" readOnly />}
+
+        {/* Rating scale selector */}
+        {isRating && (
+          <div className="space-y-2">
+            <Label>Rating Scale</Label>
+            <Select
+              value={
+                question.rating_scale?.toString() ||
+                (question.type === "rating_5" ? "5" : "10")
+              }
+              onValueChange={(v) =>
+                onUpdate({ ...question, rating_scale: parseInt(v) })
+              }
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {question.type === "rating_5" && (
+                  <SelectItem value="5">1-5 Stars</SelectItem>
+                )}
+                {question.type === "rating_10" && (
+                  <SelectItem value="10">1-10 Scale</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {question.type === "rating_5"
+                ? "⭐⭐⭐⭐⭐"
+                : "1 2 3 4 5 6 7 8 9 10"}
+            </p>
+          </div>
+        )}
+
+        {/* File upload settings */}
+        {isFileUpload && (
+          <div className="space-y-3">
+            <div>
+              <Label>Allowed File Types</Label>
+              <Input
+                value={(
+                  question.file_types || ["pdf", "jpg", "png", "docx"]
+                ).join(", ")}
+                onChange={(e) =>
+                  onUpdate({
+                    ...question,
+                    file_types: e.target.value.split(",").map((t) => t.trim()),
+                  })
+                }
+                placeholder="pdf, jpg, png, docx"
+              />
+            </div>
+            <div>
+              <Label>Max File Size (MB)</Label>
+              <Input
+                type="number"
+                value={(question.max_file_size || 5242880) / 1048576}
+                onChange={(e) =>
+                  onUpdate({
+                    ...question,
+                    max_file_size: parseFloat(e.target.value) * 1048576,
+                  })
+                }
+              />
+            </div>
+          </div>
+        )}
+
+        {question.type === "signature" && (
+          <div className="border-2 border-dashed rounded-lg p-4 text-center text-muted-foreground">
+            Signature pad will appear here
+          </div>
+        )}
 
         <Separator />
 
@@ -528,7 +605,7 @@ function QuestionCard({
             onValueChange={(v) =>
               onUpdate({
                 ...question,
-                type: v as LocalQuestion["type"],
+                type: v as QuestionType,
                 options: ["multiple_choice", "checkboxes", "dropdown"].includes(
                   v
                 )
@@ -541,27 +618,17 @@ function QuestionCard({
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="short_text">
-                <TextCursorInput className="h-4 w-4 mr-2" /> Short answer
-              </SelectItem>
-              <SelectItem value="long_text">
-                <MessageSquare className="h-4 w-4 mr-2" /> Paragraph
-              </SelectItem>
-              <SelectItem value="multiple_choice">
-                <List className="h-4 w-4 mr-2" /> Multiple choice
-              </SelectItem>
-              <SelectItem value="checkboxes">
-                <CheckSquare className="h-4 w-4 mr-2" /> Checkboxes
-              </SelectItem>
-              <SelectItem value="dropdown">
-                <ChevronDown className="h-4 w-4 mr-2" /> Dropdown
-              </SelectItem>
-              <SelectItem value="date">
-                <Calendar className="h-4 w-4 mr-2" /> Date
-              </SelectItem>
-              <SelectItem value="time">
-                <Clock className="h-4 w-4 mr-2" /> Time
-              </SelectItem>
+              {Object.entries(questionTypeConfig).map(([key, config]) => {
+                const Icon = config.icon;
+                return (
+                  <SelectItem key={key} value={key}>
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4" />
+                      {config.label}
+                    </div>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
 

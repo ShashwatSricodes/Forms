@@ -1,10 +1,11 @@
 // backend/src/controllers/responseController.js
 import supabase from "../../supabaseClient.js";
+import { v4 as uuidv4 } from "uuid";
 
-// Submit a response (public endpoint)
+// Submit a response (UPDATED - handles file uploads and signatures)
 export const submitResponse = async (req, res) => {
   const { formId } = req.params;
-  const { answers } = req.body; // Array of { question_id, answer_text, selected_options }
+  const { answers } = req.body; // Array of { question_id, answer_text, selected_options, file_data }
 
   if (!answers || !Array.isArray(answers)) {
     return res.status(400).json({ error: "Answers array is required" });
@@ -35,14 +36,58 @@ export const submitResponse = async (req, res) => {
 
     if (responseError) throw responseError;
 
-    // Insert all answers
-    const answersToInsert = answers.map((answer) => ({
-      response_id: response.id,
-      question_id: answer.question_id,
-      answer_text: answer.answer_text || null,
-      selected_options: answer.selected_options || null,
-    }));
+    // Process each answer
+    const answersToInsert = await Promise.all(
+      answers.map(async (answer) => {
+        const answerData = {
+          response_id: response.id,
+          question_id: answer.question_id,
+          answer_text: answer.answer_text || null,
+          selected_options: answer.selected_options || null,
+        };
 
+        // Handle file upload if present
+        if (answer.file_data) {
+          try {
+            const fileBuffer = Buffer.from(answer.file_data.content, "base64");
+            const fileExt = answer.file_data.name.split(".").pop();
+            const fileName = `${formId}/${response.id}/${uuidv4()}.${fileExt}`;
+
+            // Determine bucket based on question type
+            const bucket =
+              answer.question_type === "signature"
+                ? "signatures"
+                : "response-files";
+
+            // Upload to Supabase Storage
+            const { data: uploadData, error: uploadError } =
+              await supabase.storage.from(bucket).upload(fileName, fileBuffer, {
+                contentType: answer.file_data.type,
+                upsert: false,
+              });
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: urlData } = supabase.storage
+              .from(bucket)
+              .getPublicUrl(fileName);
+
+            answerData.file_url = urlData.publicUrl;
+            answerData.file_name = answer.file_data.name;
+            answerData.file_size = fileBuffer.length;
+            answerData.storage_path = fileName;
+          } catch (fileError) {
+            console.error("File upload error:", fileError);
+            // Continue without file if upload fails
+          }
+        }
+
+        return answerData;
+      })
+    );
+
+    // Insert all answers
     const { error: answersError } = await supabase
       .from("answers")
       .insert(answersToInsert);

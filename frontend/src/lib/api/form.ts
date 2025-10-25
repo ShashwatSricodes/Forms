@@ -1,4 +1,4 @@
-// frontend/src/lib/api/forms.ts
+// frontend/src/lib/api/form.ts
 import { API, fetchWithAuth } from "@/config/api";
 import type { Form, FormWithQuestions, QuestionType } from "../../types/form";
 
@@ -51,7 +51,7 @@ export async function deleteForm(formId: string): Promise<void> {
   });
 }
 
-// Add question to form
+// Add question to form (UPDATED - supports new question types)
 export async function addQuestion(
   formId: string,
   questionData: {
@@ -59,6 +59,9 @@ export async function addQuestion(
     question_type: QuestionType;
     is_required?: boolean;
     options?: string[];
+    rating_scale?: number; // ✅ NEW - For rating questions
+    file_types?: string[]; // ✅ NEW - For file_upload questions
+    max_file_size?: number; // ✅ NEW - For file_upload questions
   }
 ) {
   const data = await fetchWithAuth(API.ADD_QUESTION(formId), {

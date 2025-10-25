@@ -1,3 +1,4 @@
+// frontend/src/features/forms/PublicForm.tsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
@@ -22,8 +23,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getFormById } from "@/lib/api/form";
-import { submitResponse } from "@/lib/api/responses";
+import { submitResponse, fileToBase64 } from "@/lib/api/responses";
 import type { FormWithQuestions, Answer } from "@/types/form";
+
+// Import new question components
+import { EmailInput } from "@/components/ui/questions/EmailInput";
+import { PhoneInput } from "@/components/ui/questions/PhoneInput";
+import { UrlInput } from "@/components/ui/questions/UrlInput";
+import { RatingInput } from "@/components/ui/questions/RatingInput";
+import { FileUploadInput } from "@/components/ui/questions/FileUploadInput";
+import { SignatureInput } from "@/components/ui/questions/SignatureInput";
 
 export default function PublicForm() {
   const { formId } = useParams();
@@ -91,26 +100,79 @@ export default function PublicForm() {
       return;
     }
 
-    const formattedAnswers: Answer[] = form.questions.map((question) => {
-      const answer = answers[question.id];
+    const formattedAnswers: Answer[] = await Promise.all(
+      form.questions.map(async (question) => {
+        const answer = answers[question.id];
 
-      if (["multiple_choice", "dropdown"].includes(question.question_type)) {
-        return {
-          question_id: question.id,
-          selected_options: [answer],
-        };
-      } else if (question.question_type === "checkboxes") {
-        return {
-          question_id: question.id,
-          selected_options: answer || [],
-        };
-      } else {
+        // Handle file uploads (file_upload and signature)
+        if (
+          question.question_type === "file_upload" &&
+          answer instanceof File
+        ) {
+          const base64Content = await fileToBase64(answer);
+          return {
+            question_id: question.id,
+            file_data: {
+              name: answer.name,
+              type: answer.type,
+              content: base64Content,
+            },
+            question_type: question.question_type,
+          };
+        }
+
+        if (question.question_type === "signature" && answer) {
+          // Signature is already a base64 data URL, extract the base64 part
+          const base64Content = answer.split(",")[1];
+          return {
+            question_id: question.id,
+            file_data: {
+              name: `signature_${question.id}.png`,
+              type: "image/png",
+              content: base64Content,
+            },
+            question_type: question.question_type,
+          };
+        }
+
+        // Handle rating questions
+        if (
+          (question.question_type === "rating_5" ||
+            question.question_type === "rating_10") &&
+          answer
+        ) {
+          return {
+            question_id: question.id,
+            answer_text: answer.toString(),
+          };
+        }
+
+        // Handle multiple choice and dropdown
+        if (
+          ["multiple_choice", "dropdown"].includes(question.question_type) &&
+          answer
+        ) {
+          return {
+            question_id: question.id,
+            selected_options: [answer],
+          };
+        }
+
+        // Handle checkboxes
+        if (question.question_type === "checkboxes" && answer) {
+          return {
+            question_id: question.id,
+            selected_options: answer || [],
+          };
+        }
+
+        // Handle all text-based inputs (short_text, long_text, email, phone, url, date, time)
         return {
           question_id: question.id,
           answer_text: answer || "",
         };
-      }
-    });
+      })
+    );
 
     setSubmitting(true);
     try {
@@ -181,6 +243,7 @@ export default function PublicForm() {
                   )}
                 </Label>
 
+                {/* Short Text */}
                 {question.question_type === "short_text" && (
                   <Input
                     value={answers[question.id] || ""}
@@ -191,6 +254,7 @@ export default function PublicForm() {
                   />
                 )}
 
+                {/* Long Text */}
                 {question.question_type === "long_text" && (
                   <Textarea
                     value={answers[question.id] || ""}
@@ -202,6 +266,34 @@ export default function PublicForm() {
                   />
                 )}
 
+                {/* Email */}
+                {question.question_type === "email" && (
+                  <EmailInput
+                    value={answers[question.id] || ""}
+                    onChange={(value) => handleAnswerChange(question.id, value)}
+                    required={question.is_required}
+                  />
+                )}
+
+                {/* Phone */}
+                {question.question_type === "phone" && (
+                  <PhoneInput
+                    value={answers[question.id] || ""}
+                    onChange={(value) => handleAnswerChange(question.id, value)}
+                    required={question.is_required}
+                  />
+                )}
+
+                {/* URL */}
+                {question.question_type === "url" && (
+                  <UrlInput
+                    value={answers[question.id] || ""}
+                    onChange={(value) => handleAnswerChange(question.id, value)}
+                    required={question.is_required}
+                  />
+                )}
+
+                {/* Multiple Choice */}
                 {question.question_type === "multiple_choice" && (
                   <RadioGroup
                     value={answers[question.id]}
@@ -227,6 +319,7 @@ export default function PublicForm() {
                   </RadioGroup>
                 )}
 
+                {/* Checkboxes */}
                 {question.question_type === "checkboxes" && (
                   <div className="space-y-2">
                     {question.options?.map((option) => (
@@ -258,6 +351,7 @@ export default function PublicForm() {
                   </div>
                 )}
 
+                {/* Dropdown */}
                 {question.question_type === "dropdown" && (
                   <Select
                     value={answers[question.id]}
@@ -279,6 +373,7 @@ export default function PublicForm() {
                   </Select>
                 )}
 
+                {/* Date */}
                 {question.question_type === "date" && (
                   <Input
                     type="date"
@@ -290,12 +385,57 @@ export default function PublicForm() {
                   />
                 )}
 
+                {/* Time */}
                 {question.question_type === "time" && (
                   <Input
                     type="time"
                     value={answers[question.id] || ""}
                     onChange={(e) =>
                       handleAnswerChange(question.id, e.target.value)
+                    }
+                    required={question.is_required}
+                  />
+                )}
+
+                {/* Rating - 5 stars */}
+                {question.question_type === "rating_5" && (
+                  <RatingInput
+                    value={answers[question.id] || 0}
+                    onChange={(value) => handleAnswerChange(question.id, value)}
+                    scale={5}
+                    required={question.is_required}
+                  />
+                )}
+
+                {/* Rating - 10 scale */}
+                {question.question_type === "rating_10" && (
+                  <RatingInput
+                    value={answers[question.id] || 0}
+                    onChange={(value) => handleAnswerChange(question.id, value)}
+                    scale={10}
+                    required={question.is_required}
+                  />
+                )}
+
+                {/* File Upload */}
+                {question.question_type === "file_upload" && (
+                  <FileUploadInput
+                    value={answers[question.id] || null}
+                    onChange={(file) => handleAnswerChange(question.id, file)}
+                    acceptedTypes={
+                      question.file_types || ["pdf", "jpg", "png", "docx"]
+                    }
+                    maxSize={question.max_file_size || 5242880}
+                    required={question.is_required}
+                  />
+                )}
+
+                {/* Signature */}
+                {question.question_type === "signature" && (
+                  <SignatureInput
+                    value={answers[question.id] || null}
+                    onChange={(signature) =>
+                      handleAnswerChange(question.id, signature)
                     }
                     required={question.is_required}
                   />

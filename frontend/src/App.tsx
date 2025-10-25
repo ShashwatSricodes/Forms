@@ -14,11 +14,12 @@ import HomePage from "./features/home/page";
 import Dashboard from "./features/dashboard/Dashboard";
 
 // Forms
-import Form from "./features/forms/Form"; // ✅ updated
+import Form from "./features/forms/Form";
 import PublicForm from "./features/forms/PublicForm";
 
 // Responses
 import ResponsesList from "./features/responses/ResponsesList";
+import ResponseDetail from "./features/responses/ResponseDetail"; // ✅ NEW
 
 function App() {
   return (
@@ -31,19 +32,20 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-
         {/* Public Form (view + submit) */}
         <Route path="/form/:formId" element={<PublicForm />} />
-
         {/* Protected Dashboard */}
         <Route path="/dashboard" element={<Dashboard />} />
-
-        {/* Forms (Create + Edit unified in Form.tsx) */}
+        {/* Forms (Create + Edit) */}
         <Route path="/forms/create" element={<Form />} />
         <Route path="/forms/:formId/edit" element={<Form />} />
-
         {/* Responses */}
         <Route path="/forms/:formId/responses" element={<ResponsesList />} />
+        <Route
+          path="/responses/:responseId"
+          element={<ResponseDetail />}
+        />{" "}
+        {/* ✅ NEW */}
       </Routes>
 
       <Footer />

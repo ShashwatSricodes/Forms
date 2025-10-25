@@ -1,7 +1,10 @@
-// backend/src/routes/responseRoutes.js
+// ============================================
+// 📦 backend/src/routes/responseRoutes.js
+// UPDATED - Use new response handler
+// ============================================
 import express from "express";
 import {
-  submitResponse,
+  submitResponse, // ✅ Updated
   getFormResponses,
   getResponseById,
   deleteResponse,
@@ -10,7 +13,7 @@ import { authenticateUser } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public route - submit response
+// Public route - submit response (✅ Updated)
 router.post("/:formId/submit", submitResponse);
 
 // Protected routes - view/manage responses

@@ -1,4 +1,7 @@
-// backend/src/routes/formRoutes.js
+// ============================================
+// 📦 backend/src/routes/formRoutes.js
+// UPDATED - Use new question handler
+// ============================================
 import express from "express";
 import {
   createForm,
@@ -6,7 +9,7 @@ import {
   getFormById,
   updateForm,
   deleteForm,
-  addQuestion,
+  addQuestion, // ✅ Updated
   updateQuestion,
   deleteQuestion,
 } from "../controllers/formController.js";
@@ -21,7 +24,7 @@ router.get("/:formId", getFormById); // Public if form is public
 router.put("/:formId", authenticateUser, updateForm);
 router.delete("/:formId", authenticateUser, deleteForm);
 
-// Question routes (protected)
+// Question routes (protected) - ✅ Updated to use new handler
 router.post("/:formId/questions", authenticateUser, addQuestion);
 router.put("/questions/:questionId", authenticateUser, updateQuestion);
 router.delete("/questions/:questionId", authenticateUser, deleteQuestion);

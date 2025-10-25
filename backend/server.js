@@ -1,10 +1,15 @@
-// backend/server.js
+// ============================================
+// 📦 backend/server.js
+// UPDATED - Add new routes
+// ============================================
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./src/routes/authRoutes.js";
 import formRoutes from "./src/routes/formRoutes.js";
 import responseRoutes from "./src/routes/responseRoutes.js";
+import mediaRoutes from "./src/routes/mediaRoutes.js"; // ✅ NEW
+import brandingRoutes from "./src/routes/brandingRoutes.js"; // ✅ NEW
 
 // Load environment variables
 dotenv.config();
@@ -19,8 +24,8 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" })); // ✅ Increased for base64 files
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.get("/", (req, res) => {
   res.json({
@@ -34,6 +39,8 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/forms", formRoutes);
 app.use("/api/responses", responseRoutes);
+app.use("/api/media", mediaRoutes); // ✅ NEW
+app.use("/api/branding", brandingRoutes); // ✅ NEW
 
 // 404 handler
 app.use((req, res) => {
