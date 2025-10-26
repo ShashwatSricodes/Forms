@@ -173,16 +173,46 @@ export const deleteForm = async (req, res) => {
   }
 };
 
-// Add question to form
+// Add question to form (UPDATED - supports new question types)
 export const addQuestion = async (req, res) => {
   const { formId } = req.params;
-  const { question_text, question_type, is_required, options } = req.body;
+  const {
+    question_text,
+    question_type,
+    is_required,
+    options,
+    rating_scale,
+    file_types,
+    max_file_size,
+  } = req.body;
   const userId = req.user.id;
 
   if (!question_text || !question_type) {
     return res
       .status(400)
       .json({ error: "Question text and type are required" });
+  }
+
+  // Validate question type
+  const validTypes = [
+    "short_text",
+    "long_text",
+    "multiple_choice",
+    "checkboxes",
+    "dropdown",
+    "date",
+    "time",
+    "email",
+    "phone",
+    "url",
+    "rating_5",
+    "rating_10",
+    "file_upload",
+    "signature",
+  ];
+
+  if (!validTypes.includes(question_type)) {
+    return res.status(400).json({ error: "Invalid question type" });
   }
 
   try {
@@ -210,23 +240,43 @@ export const addQuestion = async (req, res) => {
         ? existingQuestions[0].order_index + 1
         : 0;
 
+    // Prepare question data
+    const questionData = {
+      form_id: formId,
+      question_text,
+      question_type,
+      is_required: is_required || false,
+      order_index: nextOrder,
+    };
+
+    // Add rating scale for rating questions
+    if (question_type === "rating_5" || question_type === "rating_10") {
+      questionData.rating_scale =
+        rating_scale || (question_type === "rating_5" ? 5 : 10);
+    }
+
+    // Add file constraints for file_upload questions
+    if (question_type === "file_upload") {
+      questionData.file_types = file_types || ["pdf", "jpg", "png", "docx"];
+      questionData.max_file_size = max_file_size || 5242880; // 5MB default
+    }
+
     // Insert question
     const { data: question, error: questionError } = await supabase
       .from("questions")
-      .insert({
-        form_id: formId,
-        question_text,
-        question_type,
-        is_required: is_required || false,
-        order_index: nextOrder,
-      })
+      .insert(questionData)
       .select()
       .single();
 
     if (questionError) throw questionError;
 
     // Add options if provided (for multiple_choice, checkboxes, dropdown)
-    if (options && Array.isArray(options) && options.length > 0) {
+    if (
+      ["multiple_choice", "checkboxes", "dropdown"].includes(question_type) &&
+      options &&
+      Array.isArray(options) &&
+      options.length > 0
+    ) {
       const optionsToInsert = options.map((opt, index) => ({
         question_id: question.id,
         option_text: opt,

@@ -1,4 +1,8 @@
+// ============================================
 // frontend/src/config/api.ts
+// UPDATED - Add new endpoints
+// ============================================
+
 import { supabase } from "@/config/supabaseClient";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
@@ -30,11 +34,16 @@ export const API = {
     `${BASE_URL}/responses/single/${responseId}`,
   DELETE_RESPONSE: (responseId: string) =>
     `${BASE_URL}/responses/${responseId}`,
+
+  // ✅ NEW - Media
+  MEDIA: `${BASE_URL}/media`,
+
+  // ✅ NEW - Branding
+  BRANDING: `${BASE_URL}/branding`,
 };
 
 // ✅ Helper for authenticated API calls
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  // 🔒 Always get the *current* Supabase session (auto-refreshed if needed)
   const {
     data: { session },
     error,

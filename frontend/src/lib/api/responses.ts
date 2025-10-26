@@ -2,7 +2,7 @@
 import { API, fetchWithAuth } from "@/config/api";
 import type { Answer, Response } from "../../types/form";
 
-// Submit response (public)
+// Submit response (public) - UPDATED to handle file uploads
 export async function submitResponse(
   formId: string,
   answers: Answer[]
@@ -40,5 +40,20 @@ export async function getResponseById(responseId: string): Promise<Response> {
 export async function deleteResponse(responseId: string): Promise<void> {
   await fetchWithAuth(API.DELETE_RESPONSE(responseId), {
     method: "DELETE",
+  });
+}
+
+// ✅ NEW - Helper to convert File to base64 for submission
+export async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove the data URL prefix (e.g., "data:image/png;base64,")
+      const base64 = result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = (error) => reject(error);
   });
 }
