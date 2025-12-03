@@ -1,23 +1,7 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { MenuIcon } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
 import {
   Sheet,
   SheetContent,
@@ -25,36 +9,57 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import MorphyLogo from "@/assets/Morphyb.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("authToken"));
-
-  const features = [
-    { title: "Dashboard", description: "Overview of your activity", href: "/dashboard" },
-    { title: "Analytics", description: "Track your performance", href: "/analytics" },
-    { title: "Settings", description: "Configure your preferences", href: "/settings" },
-    { title: "Integrations", description: "Connect with other tools", href: "/integrations" },
-    { title: "Storage", description: "Manage your files", href: "/storage" },
-    { title: "Support", description: "Get help when needed", href: "/support" },
-  ];
 
   useEffect(() => {
     const handleAuthChange = () => {
       setIsLoggedIn(!!localStorage.getItem("authToken"));
     };
-
     window.addEventListener("authChange", handleAuthChange);
-
-    return () => {
-      window.removeEventListener("authChange", handleAuthChange);
-    };
+    return () => window.removeEventListener("authChange", handleAuthChange);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
-    window.dispatchEvent(new Event("authChange")); // immediately update Navbar
+    window.dispatchEvent(new Event("authChange"));
     navigate("/login");
+  };
+
+  // ✅ Smooth scroll handler for "Features"
+  const handleScrollToFeatures = () => {
+    if (location.pathname === "/") {
+      const el = document.getElementById("features");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate("/");
+      setTimeout(() => {
+        const el = document.getElementById("features");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
+  };
+
+  // ✅ Smooth scroll handler for "Pricing"
+  const handleScrollToPricing = () => {
+    if (location.pathname === "/") {
+      const el = document.getElementById("pricing");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate("/");
+      setTimeout(() => {
+        const el = document.getElementById("pricing");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
   };
 
   return (
@@ -64,49 +69,37 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img
-              src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg"
-              className="max-h-8"
-              alt="Logo"
+              src={MorphyLogo}
+              alt="Morphy Logo"
+              className="h-8 md:h-9 w-auto object-contain translate-y-[1px]"
+              loading="lazy"
             />
-            <span className="text-lg font-semibold tracking-tighter">MyApp</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <NavigationMenu className="hidden lg:block">
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Features</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="grid w-[600px] grid-cols-2 p-3">
-                    {features.map((feature, i) => (
-                      <NavigationMenuLink
-                        key={i}
-                        asChild
-                        className="rounded-md p-3 transition-colors hover:bg-muted/70"
-                      >
-                        <Link to={feature.href}>
-                          <p className="mb-1 font-semibold text-foreground">{feature.title}</p>
-                          <p className="text-sm text-muted-foreground">{feature.description}</p>
-                        </Link>
-                      </NavigationMenuLink>
-                    ))}
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-
-              {["/dashboard", "/resources", "/contact"].map((path) => {
-                const label = path.replace("/", "");
-                const capitalized = label.charAt(0).toUpperCase() + label.slice(1);
-                return (
-                  <NavigationMenuItem key={path}>
-                    <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                      <Link to={path}>{capitalized}</Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-                );
-              })}
-            </NavigationMenuList>
-          </NavigationMenu>
+          <div className="hidden lg:flex items-center gap-8">
+            <Link to="/" className="text-sm font-medium hover:text-gray-700 transition-colors">
+              Home
+            </Link>
+            <button
+              onClick={handleScrollToFeatures}
+              className="text-sm font-medium hover:text-gray-700 transition-colors"
+            >
+              Features
+            </button>
+            <Link to="/dashboard" className="text-sm font-medium hover:text-gray-700 transition-colors">
+              Dashboard
+            </Link>
+            <button
+              onClick={handleScrollToPricing}
+              className="text-sm font-medium hover:text-gray-700 transition-colors"
+            >
+              Pricing
+            </button>
+            <Link to="/contact" className="text-sm font-medium hover:text-gray-700 transition-colors">
+              Contact
+            </Link>
+          </div>
 
           {/* Desktop Buttons */}
           <div className="hidden items-center gap-4 lg:flex">
@@ -122,70 +115,57 @@ const Navbar = () => {
             ) : (
               <Button
                 onClick={handleLogout}
-                className="bg-black text-white hover:bg-zinc-800"
+                className="bg-[#333333] text-white hover:bg-[#1a1a1a]"
               >
                 Logout
               </Button>
             )}
           </div>
 
-          {/* Mobile Sheet */}
+          {/* Mobile Navigation */}
           <Sheet>
             <SheetTrigger asChild className="lg:hidden">
               <Button variant="outline" size="icon">
                 <MenuIcon className="h-4 w-4" />
               </Button>
             </SheetTrigger>
+
             <SheetContent side="top" className="max-h-screen overflow-auto">
               <SheetHeader>
                 <SheetTitle>
                   <Link to="/" className="flex items-center gap-2">
                     <img
-                      src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg"
-                      className="max-h-8"
-                      alt="Logo"
+                      src={MorphyLogo}
+                      alt="Morphy Logo"
+                      className="h-8 md:h-9 w-auto object-contain translate-y-[1px]"
+                      loading="lazy"
                     />
-                    <span className="text-lg font-semibold tracking-tighter">MyApp</span>
                   </Link>
                 </SheetTitle>
               </SheetHeader>
 
-              <div className="flex flex-col p-4">
-                <Accordion type="single" collapsible className="mt-4 mb-2">
-                  <AccordionItem value="solutions" className="border-none">
-                    <AccordionTrigger className="text-base hover:no-underline">
-                      Features
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="grid md:grid-cols-2">
-                        {features.map((feature, i) => (
-                          <Link
-                            key={i}
-                            to={feature.href}
-                            className="rounded-md p-3 transition-colors hover:bg-muted/70"
-                          >
-                            <p className="mb-1 font-semibold text-foreground">{feature.title}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {feature.description}
-                            </p>
-                          </Link>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-
-                <div className="flex flex-col gap-6">
-                  <Link to="/dashboard" className="font-medium">
-                    Dashboard
-                  </Link>
-                  <Link to="/blog" className="font-medium">
-                    Blog
-                  </Link>
-                  <Link to="/pricing" className="font-medium">
-                    Pricing
-                  </Link>
-                </div>
+              <div className="flex flex-col p-6 space-y-6">
+                <Link to="/" className="text-base font-medium hover:text-gray-700">
+                  Home
+                </Link>
+                <button
+                  onClick={handleScrollToFeatures}
+                  className="text-base font-medium hover:text-gray-700 text-left"
+                >
+                  Features
+                </button>
+                <Link to="/dashboard" className="text-base font-medium hover:text-gray-700">
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleScrollToPricing}
+                  className="text-base font-medium hover:text-gray-700 text-left"
+                >
+                  Pricing
+                </button>
+                <Link to="/contact" className="text-base font-medium hover:text-gray-700">
+                  Contact
+                </Link>
 
                 <div className="mt-6 flex flex-col gap-4">
                   {!isLoggedIn ? (
@@ -200,7 +180,7 @@ const Navbar = () => {
                   ) : (
                     <Button
                       onClick={handleLogout}
-                      className="bg-black text-white hover:bg-zinc-800"
+                      className="bg-[#333333] text-white hover:bg-[#1a1a1a]"
                     >
                       Logout
                     </Button>

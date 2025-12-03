@@ -12,6 +12,7 @@ import {
   LayoutTemplate,
   FileText,
   Loader2,
+  Link2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,10 +46,8 @@ export default function Dashboard() {
       const { data, error } = await supabase.auth.getUser();
 
       if (error || !data?.user) {
-        console.warn(
-          "⚠️ User not found or session expired. Redirecting to login..."
-        );
-        navigate("/login"); // optional redirect
+        console.warn("⚠️ User not found. Redirecting to login...");
+        navigate("/login");
         return;
       }
 
@@ -61,7 +60,7 @@ export default function Dashboard() {
     fetchUser();
   }, [navigate]);
 
-  // ✅ Load forms (authenticated)
+  // ✅ Load forms
   useEffect(() => {
     loadForms();
   }, []);
@@ -73,18 +72,13 @@ export default function Dashboard() {
       setForms(data || []);
     } catch (err: any) {
       console.error("Failed to load forms:", err);
-      if (err.message?.toLowerCase().includes("token")) {
-        alert("Session expired. Please log in again.");
-        navigate("/login");
-      } else {
-        alert("Failed to load forms");
-      }
+      alert("Failed to load forms");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Filter & sort forms
+  // ✅ Search & sort
   useEffect(() => {
     let result = [...forms];
     if (searchQuery.trim()) {
@@ -103,6 +97,7 @@ export default function Dashboard() {
     setFilteredForms(result);
   }, [forms, searchQuery, sortBy]);
 
+  // ✅ Delete a form
   const handleDelete = async (formId: string) => {
     if (!confirm("Are you sure you want to delete this form?")) return;
     try {
@@ -112,6 +107,13 @@ export default function Dashboard() {
       console.error("Failed to delete form:", err);
       alert("Failed to delete form");
     }
+  };
+
+  // ✅ Copy public form link (fixed route consistency)
+  const handleCopyLink = (formId: string) => {
+    const link = `${window.location.origin}/form/${formId}`;
+    navigator.clipboard.writeText(link);
+    alert("✅ Public link copied to clipboard!");
   };
 
   if (loading) {
@@ -124,10 +126,9 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="w-full min-h-screen bg-white md:bg-gray-50 pt-12 md:pt-16 mt-8 md:rounded-t-xl">
-        {/* --- Header --- */}
+      <div className="w-full min-h-screen pt-12 md:pt-16 mt-8">
+        {/* Header */}
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 px-4 sm:px-6 lg:px-8">
-          {/* --- User Info --- */}
           {user && (
             <div className="flex items-center gap-3 flex-wrap">
               <Button
@@ -149,7 +150,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* --- Controls --- */}
+          {/* Controls */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <Input
               placeholder="Search your forms..."
@@ -180,7 +181,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* --- Forms Section --- */}
+        {/* Forms Section */}
         <main className="px-4 sm:px-6 lg:px-8 pb-12">
           {forms.length === 0 ? (
             <div className="text-center py-16">
@@ -196,10 +197,10 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {/* --- Create New Form Card --- */}
+              {/* Create New Form Card */}
               <Card
                 onClick={() => navigate("/forms/create")}
-                className="h-52 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors"
+                className="h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-gray-400 transition"
               >
                 <CardContent className="pt-6 text-center">
                   <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
@@ -214,11 +215,11 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              {/* --- Form Cards --- */}
+              {/* Form Cards */}
               {filteredForms.map((form) => (
                 <Card
                   key={form.id}
-                  className="h-52 flex flex-col justify-between hover:shadow-lg transition-shadow overflow-hidden"
+                  className="h-52 flex flex-col justify-between hover:shadow-lg transition overflow-hidden"
                 >
                   <CardContent className="pt-4 pb-2">
                     <h3 className="font-semibold line-clamp-2 break-words text-base">
@@ -245,42 +246,43 @@ export default function Dashboard() {
                     </div>
                   </CardContent>
 
-                  <CardFooter className="flex justify-end gap-3 pr-4 pb-4">
+                  <CardFooter className="flex justify-end gap-2 pr-3 pb-3">
                     <Button
-                      className="h-11 w-11"
                       variant="ghost"
                       aria-label="Edit form"
                       onClick={() => navigate(`/forms/${form.id}/edit`)}
                     >
-                      <Edit className="h-7 w-7" />
+                      <Edit className="h-6 w-6" />
                     </Button>
+
                     <Button
-                      className="h-11 w-11"
                       variant="ghost"
                       aria-label="View responses"
                       onClick={() => navigate(`/forms/${form.id}/responses`)}
                     >
-                      <Eye className="h-7 w-7" />
+                      <Eye className="h-6 w-6" />
                     </Button>
+
+                    {form.is_public && (
+                      <Button
+                        variant="ghost"
+                        aria-label="Copy public link"
+                        onClick={() => handleCopyLink(form.id)}
+                      >
+                        <Link2 className="h-6 w-6 text-blue-600" />
+                      </Button>
+                    )}
+
                     <Button
-                      className="h-11 w-11"
                       variant="ghost"
                       aria-label="Delete form"
                       onClick={() => handleDelete(form.id)}
                     >
-                      <Trash2 className="h-7 w-7 text-red-500" />
+                      <Trash2 className="h-6 w-6 text-red-500" />
                     </Button>
                   </CardFooter>
                 </Card>
               ))}
-            </div>
-          )}
-
-          {filteredForms.length === 0 && forms.length > 0 && (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground">
-                No forms match your search
-              </p>
             </div>
           )}
         </main>

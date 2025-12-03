@@ -28,6 +28,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/supabase-js": "^2.58.0",
     "@tailwindcss/vite": "^4.1.13",
+    "baseline-browser-mapping": "^2.8.32",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.22",

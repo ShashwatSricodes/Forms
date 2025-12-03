@@ -2,12 +2,6 @@ import React from "react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 
 interface Footer7Props {
-  logo?: {
-    url: string;
-    src: string;
-    alt: string;
-    title: string;
-  };
   sections?: Array<{
     title: string;
     links: Array<{ name: string; href: string }>;
@@ -68,36 +62,23 @@ const defaultLegalLinks = [
 ];
 
 const Footer7 = ({
-  logo = {
-    url: "https://www.shadcnblocks.com",
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
-    alt: "logo",
-    title: "Shadcnblocks.com",
-  },
   sections = defaultSections,
   description = "A collection of components for your startup business or side project.",
   socialLinks = defaultSocialLinks,
-  copyright = "© 2025 Shadcnblocks.com. All rights reserved.",
+  copyright = "© 2025 Morphy. All rights reserved.",
   legalLinks = defaultLegalLinks,
 }: Footer7Props) => {
   return (
     <section className="py-16 sm:py-24">
       <div className="px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
-        {/* Top: Logo + Description + Social */}
+        {/* Top: Description + Social */}
         <div className="flex flex-col lg:flex-row justify-between gap-10">
-          {/* === MODIFIED SECTION === */}
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left gap-6 w-full lg:w-1/3">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <a href={logo.url}>
-                <img src={logo.src} alt={logo.alt} title={logo.title} className="h-8" />
-              </a>
-              <h2 className="text-xl font-semibold">{logo.title}</h2>
-            </div>
             {/* Description */}
             <p className="text-muted-foreground max-w-full sm:max-w-[70%] text-sm">
               {description}
             </p>
+
             {/* Social Links */}
             <ul className="flex items-center space-x-4 sm:space-x-6">
               {socialLinks.map((social, idx) => (
@@ -111,7 +92,6 @@ const Footer7 = ({
           </div>
 
           {/* Sections */}
-          {/* === MODIFIED SECTION === */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-6 lg:gap-20 w-full">
             {sections.map((section, sectionIdx) => (
               <div key={sectionIdx}>

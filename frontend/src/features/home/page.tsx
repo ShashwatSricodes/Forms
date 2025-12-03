@@ -3,12 +3,18 @@ import React from 'react';
 import Feature from './components/feature';
 import Hero from './components/Hero';
 import Testimonials from './components/Testimonials';
+import Pricing from './components/Pricing';
 
 const HomePage = () => {
   return (
     <main>
       <Hero />
-      <Feature />
+     <section id="features">   {/* 👈 Add this wrapper */}
+        <Feature />
+      </section>
+    <section id="pricing">
+  <Pricing />
+</section>
       <Testimonials />
       {/* Add other page elements here */}
     </main>
