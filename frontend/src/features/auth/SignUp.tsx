@@ -1,4 +1,3 @@
-// src/features/auth/Signup.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -36,18 +35,12 @@ export default function Signup() {
     e.preventDefault();
 
     if (!email || !password) {
-      setMessage({
-        type: "error",
-        text: "Please enter both email and password.",
-      });
+      setMessage({ type: "error", text: "Please enter both email and password." });
       return;
     }
 
     if (password.length < 6) {
-      setMessage({
-        type: "error",
-        text: "Password must be at least 6 characters.",
-      });
+      setMessage({ type: "error", text: "Password must be at least 6 characters." });
       return;
     }
 
@@ -66,14 +59,16 @@ export default function Signup() {
       if (res.ok) {
         setMessage({ type: "success", text: data.message });
 
-        // Save token if provided
         if (data.token) {
+          // Save token
           localStorage.setItem("authToken", data.token);
           localStorage.setItem("userEmail", email);
+
+          // Notify app
           window.dispatchEvent(new Event("authChange"));
 
-          // Navigate to dashboard
-          setTimeout(() => navigate("/dashboard"), 1000);
+          // Redirect immediately
+          navigate("/dashboard", { replace: true });
         }
       } else {
         setMessage({ type: "error", text: data.error || "Signup failed" });
@@ -86,14 +81,14 @@ export default function Signup() {
     }
   };
 
-  // OAuth Sign-In (Google/GitHub)
+  // OAuth Sign-Up
   const handleOAuthSignIn = async (provider: "google" | "github") => {
     setIsOAuthLoading(provider);
     setMessage(null);
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: provider,
+        provider,
         options: {
           redirectTo: `${import.meta.env.VITE_APP_URL}/auth/callback`,
         },
@@ -104,7 +99,6 @@ export default function Signup() {
         setMessage({ type: "error", text: error.message });
         setIsOAuthLoading(null);
       }
-      // User will be redirected to provider's login page
     } catch (err) {
       console.error(`${provider} OAuth error:`, err);
       setMessage({ type: "error", text: `Failed to connect with ${provider}` });
@@ -116,12 +110,8 @@ export default function Signup() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md p-6 shadow-lg rounded-2xl">
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-2xl font-bold">
-            Create an Account
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Enter your details to get started
-          </p>
+          <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
+          <p className="text-sm text-muted-foreground">Enter your details to get started</p>
         </CardHeader>
 
         <CardContent className="space-y-4">
