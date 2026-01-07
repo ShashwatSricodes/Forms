@@ -1,247 +1,228 @@
 // frontend/src/features/responses/ResponseDetail.tsx
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Star, File, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import {
+  ArrowLeft,
+  Download,
+  Star,
+  File,
+  ExternalLink,
+} from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { getResponseById } from "@/lib/api/responses";
-import type { Response } from "@/types/form";
-import { getQuestionTypeLabel } from "@/lib/questionTypes";
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+
+import { getResponseById } from "@/lib/api/responses"
+import type { Response } from "@/types/form"
+import { getQuestionTypeLabel } from "@/lib/questionTypes"
 
 export default function ResponseDetail() {
-  const { responseId } = useParams();
-  const navigate = useNavigate();
-  const [response, setResponse] = useState<Response | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { responseId } = useParams()
+  const navigate = useNavigate()
+
+  const [response, setResponse] = useState<Response | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (responseId) {
-      loadResponse(responseId);
-    }
-  }, [responseId]);
+    if (responseId) loadResponse(responseId)
+  }, [responseId])
 
   const loadResponse = async (id: string) => {
     try {
-      const data = await getResponseById(id);
-      setResponse(data);
-    } catch (error) {
-      console.error("Failed to load response:", error);
-      alert("Failed to load response");
+      const data = await getResponseById(id)
+      setResponse(data)
+    } catch {
+      alert("Failed to load response")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const renderAnswer = (answer: Response["answers"][0]) => {
-    const questionType = answer.questions?.question_type;
+    const type = answer.questions?.question_type
 
-    // File upload
-    if (questionType === "file_upload" && answer.file_url) {
+    if (type === "file_upload" && answer.file_url) {
       return (
-        <div className="flex items-center gap-3 p-4 border rounded-lg bg-muted/50">
-          <File className="h-8 w-8 text-primary" />
+        <div className="flex items-center gap-3 rounded-md border px-4 py-3">
+          <File className="h-5 w-5 text-muted-foreground" />
           <div className="flex-1">
-            <p className="font-medium">{answer.file_name}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium">{answer.file_name}</p>
+            <p className="text-xs text-muted-foreground">
               {answer.file_size
                 ? `${(answer.file_size / 1024).toFixed(1)} KB`
                 : "Unknown size"}
             </p>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <a href={answer.file_url} target="_blank" rel="noopener noreferrer">
-              <Download className="h-4 w-4 mr-2" />
-              Download
+          <Button variant="ghost" size="icon" asChild>
+            <a href={answer.file_url} target="_blank" rel="noreferrer">
+              <Download className="h-4 w-4" />
             </a>
           </Button>
         </div>
-      );
+      )
     }
 
-    // Signature
-    if (questionType === "signature" && answer.file_url) {
+    if (type === "signature" && answer.file_url) {
       return (
-        <div className="border rounded-lg p-4 bg-white">
+        <div className="rounded-md border bg-background p-3">
           <img
             src={answer.file_url}
             alt="Signature"
-            className="max-w-full h-auto"
+            className="max-h-40"
           />
         </div>
-      );
+      )
     }
 
-    // Rating - 5 stars
-    if (questionType === "rating_5") {
-      const rating = parseInt(answer.answer_text || "0");
+    if (type === "rating_5") {
+      const rating = Number(answer.answer_text || 0)
       return (
-        <div className="flex gap-2">
-          {[1, 2, 3, 4, 5].map((star) => (
+        <div className="flex items-center gap-1">
+          {Array.from({ length: 5 }).map((_, i) => (
             <Star
-              key={star}
-              className={`h-8 w-8 ${
-                star <= rating
+              key={i}
+              className={`h-5 w-5 ${
+                i < rating
                   ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-300"
+                  : "text-muted"
               }`}
             />
           ))}
-          <span className="ml-2 text-lg font-semibold">{rating}/5</span>
+          <span className="ml-2 text-sm text-muted-foreground">
+            {rating}/5
+          </span>
         </div>
-      );
+      )
     }
 
-    // Rating - 10 scale
-    if (questionType === "rating_10") {
-      const rating = parseInt(answer.answer_text || "0");
+    if (type === "rating_10") {
       return (
-        <div className="flex gap-2 flex-wrap">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-            <div
-              key={num}
-              className={`w-10 h-10 rounded-lg border-2 font-semibold flex items-center justify-center ${
-                num <= rating
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-foreground border-border"
-              }`}
-            >
-              {num}
-            </div>
-          ))}
-          <span className="ml-2 text-lg font-semibold">{rating}/10</span>
-        </div>
-      );
+        <p className="text-sm">
+          <span className="font-medium">{answer.answer_text}</span>
+          <span className="text-muted-foreground"> / 10</span>
+        </p>
+      )
     }
 
-    // URL
-    if (questionType === "url" && answer.answer_text) {
+    if (type === "url" && answer.answer_text) {
       return (
         <a
           href={answer.answer_text}
           target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-primary hover:underline"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 text-sm text-primary underline-offset-4 hover:underline"
         >
           {answer.answer_text}
-          <ExternalLink className="h-4 w-4" />
+          <ExternalLink className="h-3 w-3" />
         </a>
-      );
+      )
     }
 
-    // Email
-    if (questionType === "email" && answer.answer_text) {
+    if (type === "email" && answer.answer_text) {
       return (
         <a
           href={`mailto:${answer.answer_text}`}
-          className="text-primary hover:underline"
+          className="text-sm text-primary hover:underline"
         >
           {answer.answer_text}
         </a>
-      );
+      )
     }
 
-    // Phone
-    if (questionType === "phone" && answer.answer_text) {
+    if (type === "phone" && answer.answer_text) {
       return (
         <a
           href={`tel:${answer.answer_text}`}
-          className="text-primary hover:underline"
+          className="text-sm text-primary hover:underline"
         >
           {answer.answer_text}
         </a>
-      );
+      )
     }
 
-    // Multiple choice / checkboxes / dropdown with selected options
-    if (answer.selected_options && answer.selected_options.length > 0) {
-      // Note: In a real implementation, you'd need to fetch the question's options
-      // to map the IDs to option texts. For now, we'll just show the IDs.
+    if (answer.selected_options?.length) {
       return (
         <div className="flex flex-wrap gap-2">
-          {answer.selected_options.map((optionId) => (
-            <Badge key={optionId} variant="secondary">
-              {optionId}
+          {answer.selected_options.map((id) => (
+            <Badge key={id} variant="secondary">
+              {id}
             </Badge>
           ))}
         </div>
-      );
+      )
     }
 
-    // Text answer (short_text, long_text, date, time)
     if (answer.answer_text) {
       return (
-        <p className="text-base whitespace-pre-wrap">{answer.answer_text}</p>
-      );
+        <p className="whitespace-pre-wrap text-sm">
+          {answer.answer_text}
+        </p>
+      )
     }
 
-    return <p className="text-muted-foreground">No answer provided</p>;
-  };
+    return <p className="text-sm text-muted-foreground">No answer</p>
+  }
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <p>Loading response...</p>
-      </div>
-    );
+    return <div className="p-8 text-sm">Loading response…</div>
   }
 
   if (!response) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <p>Response not found</p>
-      </div>
-    );
+    return <div className="p-8 text-sm">Response not found</div>
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(`/forms/${response.form_id}/responses`)}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Responses
-        </Button>
-      </div>
+    <div className="mx-auto max-w-3xl px-4 py-8 space-y-6">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() =>
+          navigate(`/forms/${response.form_id}/responses`)
+        }
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back
+      </Button>
 
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
-          <CardTitle>Response Details</CardTitle>
+          <CardTitle>Response</CardTitle>
           <CardDescription>
-            Submitted on {new Date(response.submitted_at).toLocaleString()}
+            Submitted {new Date(response.submitted_at).toLocaleString()}
           </CardDescription>
         </CardHeader>
-      </Card>
 
-      <div className="space-y-6">
-        {response.answers.map((answer, index) => (
-          <Card key={answer.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">
-                    {index + 1}. {answer.questions?.question_text}
-                  </CardTitle>
-                </div>
-                <Badge variant="outline">
-                  {getQuestionTypeLabel(answer.questions?.question_type || "")}
+        <CardContent className="space-y-8">
+          {response.answers.map((answer, index) => (
+            <div key={answer.id} className="space-y-2">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-sm font-medium leading-snug">
+                  {index + 1}. {answer.questions?.question_text}
+                </p>
+                <Badge variant="outline" className="text-xs">
+                  {getQuestionTypeLabel(
+                    answer.questions?.question_type || ""
+                  )}
                 </Badge>
               </div>
-            </CardHeader>
-            <Separator />
-            <CardContent className="pt-6">{renderAnswer(answer)}</CardContent>
-          </Card>
-        ))}
-      </div>
+
+              {renderAnswer(answer)}
+
+              {index !== response.answers.length - 1 && (
+                <Separator className="mt-6" />
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }
