@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   "Unlimited forms",
@@ -17,6 +18,8 @@ const features = [
 ];
 
 export default function PricingSection() {
+  const navigate = useNavigate();
+
   return (
     <section id="pricing" className="w-full py-20 px-6 bg-white">
       <div className="max-w-4xl mx-auto text-center">
@@ -77,6 +80,7 @@ export default function PricingSection() {
             <Button
               variant="default"
               className="w-full bg-[#333333] text-white hover:bg-[#1a1a1a] rounded-xl transition-colors"
+              onClick={() => navigate("/dashboard")} // << CLICK → DASHBOARD
             >
               Get Started
             </Button>
