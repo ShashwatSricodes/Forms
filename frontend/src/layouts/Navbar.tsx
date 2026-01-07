@@ -10,12 +10,39 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import MorphyLogo from "@/assets/Morphyb.png";
+import { supabase } from "@/config/supabaseClient";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("authToken"));
 
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem("authToken")
+  );
+
+  // 🔥 NEW: Sync auth state on mount + navigation + Supabase persistence
+  useEffect(() => {
+    const syncAuth = async () => {
+      // Check Supabase session (OAuth persistence)
+      const { data } = await supabase.auth.getSession();
+
+      if (data.session) {
+        // Ensure LS matches Supabase
+        localStorage.setItem("authToken", data.session.access_token);
+        setIsLoggedIn(true);
+      } else {
+        // If no session, wipe LS token
+        if (!localStorage.getItem("authToken")) {
+          localStorage.removeItem("authToken");
+        }
+        setIsLoggedIn(!!localStorage.getItem("authToken"));
+      }
+    };
+
+    syncAuth();
+  }, [location.pathname]);
+
+  // Listen for manual token changes (Login → Callback → Logout)
   useEffect(() => {
     const handleAuthChange = () => {
       setIsLoggedIn(!!localStorage.getItem("authToken"));
@@ -24,19 +51,24 @@ const Navbar = () => {
     return () => window.removeEventListener("authChange", handleAuthChange);
   }, []);
 
-  const handleLogout = () => {
+  // Logout handler
+  const handleLogout = async () => {
+    // Logout Supabase also
+    await supabase.auth.signOut();
+
     localStorage.removeItem("authToken");
+    localStorage.removeItem("supabaseSession");
+    localStorage.removeItem("refreshToken");
+
     window.dispatchEvent(new Event("authChange"));
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
-  // ✅ Smooth scroll handler for "Features"
+  // Smooth scroll helpers (unchanged)
   const handleScrollToFeatures = () => {
     if (location.pathname === "/") {
       const el = document.getElementById("features");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
+      if (el) el.scrollIntoView({ behavior: "smooth" });
     } else {
       navigate("/");
       setTimeout(() => {
@@ -46,13 +78,10 @@ const Navbar = () => {
     }
   };
 
-  // ✅ Smooth scroll handler for "Pricing"
   const handleScrollToPricing = () => {
     if (location.pathname === "/") {
       const el = document.getElementById("pricing");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
+      if (el) el.scrollIntoView({ behavior: "smooth" });
     } else {
       navigate("/");
       setTimeout(() => {
@@ -145,9 +174,7 @@ const Navbar = () => {
               </SheetHeader>
 
               <div className="flex flex-col p-6 space-y-6">
-                <Link to="/" className="text-base font-medium hover:text-gray-700">
-                  Home
-                </Link>
+                <Link to="/" className="text-base font-medium hover:text-gray-700">Home</Link>
                 <button
                   onClick={handleScrollToFeatures}
                   className="text-base font-medium hover:text-gray-700 text-left"
