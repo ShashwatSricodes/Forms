@@ -1,4 +1,3 @@
-// src/features/auth/AuthCallback.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/config/supabaseClient";
@@ -15,7 +14,7 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
-        // Get the session after OAuth redirect
+        // Get session after OAuth redirect
         const {
           data: { session },
           error,
@@ -30,32 +29,39 @@ export default function AuthCallback() {
         }
 
         if (session) {
-          // Save auth token and user info
-          localStorage.setItem("authToken", session.access_token);
-          localStorage.setItem("userEmail", session.user.email || "");
+          // Store full session for persistence
+          localStorage.setItem("supabaseSession", JSON.stringify(session));
 
-          // Store additional user metadata if available
-          if (session.user.user_metadata) {
-            const { full_name, avatar_url } = session.user.user_metadata;
+          // Save token shortcuts
+          localStorage.setItem("authToken", session.access_token);
+          if (session.refresh_token) {
+            localStorage.setItem("refreshToken", session.refresh_token);
+          }
+
+          // Save email + profile if present
+          const { user } = session;
+          if (user.email) localStorage.setItem("userEmail", user.email);
+          if (user.user_metadata) {
+            const { full_name, avatar_url } = user.user_metadata;
             if (full_name) localStorage.setItem("userName", full_name);
             if (avatar_url) localStorage.setItem("userAvatar", avatar_url);
           }
 
-          // Dispatch auth change event
+          // Notify app UI
           window.dispatchEvent(new Event("authChange"));
 
           setStatus("success");
 
-          // Redirect to dashboard
-          setTimeout(() => navigate("/dashboard"), 1000);
+          // Redirect immediately (no timeout race)
+          navigate("/dashboard", { replace: true });
         } else {
-          setErrorMessage("No session found. Please try again.");
+          setErrorMessage("No session returned. Please try again.");
           setStatus("error");
           setTimeout(() => navigate("/login"), 2000);
         }
       } catch (err) {
-        console.error("Unexpected error during OAuth callback:", err);
-        setErrorMessage("An unexpected error occurred.");
+        console.error("Unexpected OAuth error:", err);
+        setErrorMessage("Unexpected error occurred.");
         setStatus("error");
         setTimeout(() => navigate("/login"), 2000);
       }
@@ -73,9 +79,7 @@ export default function AuthCallback() {
               <>
                 <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
                 <h2 className="text-lg font-semibold">Completing sign-in...</h2>
-                <p className="text-sm text-muted-foreground">
-                  Please wait a moment
-                </p>
+                <p className="text-sm text-muted-foreground">Please wait a moment</p>
               </>
             )}
 
@@ -88,20 +92,11 @@ export default function AuthCallback() {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h2 className="text-lg font-semibold text-green-600">
-                  Sign-in successful!
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Redirecting to dashboard...
-                </p>
+                <h2 className="text-lg font-semibold text-green-600">Sign-in successful!</h2>
+                <p className="text-sm text-muted-foreground">Redirecting…</p>
               </>
             )}
 
@@ -114,21 +109,12 @@ export default function AuthCallback() {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
-                <h2 className="text-lg font-semibold text-red-600">
-                  Sign-in failed
-                </h2>
+                <h2 className="text-lg font-semibold text-red-600">Sign-in failed</h2>
                 <p className="text-sm text-muted-foreground">{errorMessage}</p>
-                <p className="text-sm text-muted-foreground">
-                  Redirecting back to login...
-                </p>
+                <p className="text-sm text-muted-foreground">Sending you back…</p>
               </>
             )}
           </div>
