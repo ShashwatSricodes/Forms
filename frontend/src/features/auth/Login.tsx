@@ -1,4 +1,3 @@
-// src/features/auth/Login.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -62,10 +61,12 @@ export default function Login() {
         if (data.token) {
           localStorage.setItem("authToken", data.token);
           localStorage.setItem("userEmail", email);
+
+          // Sync with global state
           window.dispatchEvent(new Event("authChange"));
 
-          // Navigate to dashboard
-          setTimeout(() => navigate("/dashboard"), 1000);
+          // Navigate instantly - no delay needed
+          navigate("/dashboard", { replace: true });
         }
       } else {
         setMessage({ type: "error", text: data.error || "Login failed" });
@@ -85,7 +86,7 @@ export default function Login() {
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: provider,
+        provider,
         options: {
           redirectTo: `${import.meta.env.VITE_APP_URL}/auth/callback`,
         },
