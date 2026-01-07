@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,6 @@ const Hero7 = ({
   heading = (
     <>
       Forms reimagined for{" "}
-      {/* UPDATED: Nested spans to keep text straight and box slanted */}
       <span className="inline-block -rotate-2 rounded-sm bg-yellow-200 px-2">
         <span className="inline-block rotate-2 text-black">simplicity</span>
       </span>{" "}
@@ -38,7 +38,7 @@ const Hero7 = ({
   description = "Create, share, and collect responses with clean, minimal forms — no clutter, no fuss.",
   button = {
     text: "Create your first form",
-    url: "https://www.shadcnblocks.com",
+    url: "/dashboard",
   },
   reviews = {
     count: 200,
@@ -52,6 +52,8 @@ const Hero7 = ({
     ],
   },
 }: Hero7Props) => {
+  const navigate = useNavigate();
+
   return (
     <section className="py-32">
       <div className="container text-center">
@@ -63,9 +65,16 @@ const Hero7 = ({
             {description}
           </p>
         </div>
-        <Button asChild size="lg" className="mt-10">
-          <a href={button.url}>{button.text}</a>
+
+        {/* CLICK → GO TO DASHBOARD */}
+        <Button
+          size="lg"
+          className="mt-10"
+          onClick={() => navigate("/dashboard")}
+        >
+          {button.text}
         </Button>
+
         <div className="mx-auto mt-10 flex w-fit flex-col items-center gap-4 sm:flex-row">
           <span className="mx-4 inline-flex items-center -space-x-4">
             {reviews.avatars.map((avatar, index) => (
@@ -74,6 +83,7 @@ const Hero7 = ({
               </Avatar>
             ))}
           </span>
+
           <div>
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, index) => (
