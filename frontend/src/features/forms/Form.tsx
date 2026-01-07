@@ -70,7 +70,7 @@ export default function Form() {
 
   const [title, setTitle] = useState("Untitled Form");
   const [description, setDescription] = useState("Form description");
-  const [isPublic, setIsPublic] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
   const [questions, setQuestions] = useState<LocalQuestion[]>([]);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(isEditMode);
