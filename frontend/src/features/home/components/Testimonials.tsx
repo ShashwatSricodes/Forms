@@ -1,5 +1,3 @@
-// components/Testimonials.tsx
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 // Testimonial data remains the same
 const testimonials = [
@@ -42,7 +41,7 @@ const testimonials = [
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026708d",
     quote: "Their strategic insights helped us double our user engagement in just one quarter.",
   },
-   {
+  {
     name: "Michael Brown",
     title: "Product Manager",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026703d",
@@ -51,16 +50,16 @@ const testimonials = [
 ];
 
 export default function Testimonials() {
+  const navigate = useNavigate();
+
   return (
     <>
-      {/* This <style> tag injects the animation CSS directly into the document.
-        It's scoped to this component's usage through the .animate-scroller class.
-      */}
+      {/* Scoped CSS for animation */}
       <style>
         {`
         @keyframes scroll {
           to {
-            transform: translate(calc(-50% - 0.5rem)); /* 0.5rem is for the gap */
+            transform: translate(calc(-50% - 0.5rem));
           }
         }
         .animate-scroller {
@@ -71,7 +70,7 @@ export default function Testimonials() {
         }
       `}
       </style>
-      
+
       <section className="py-20">
         <div className="container mx-auto max-w-6xl">
           {/* Section Header */}
@@ -82,7 +81,11 @@ export default function Testimonials() {
             <p className="max-w-[700px] text-muted-foreground md:text-xl">
               All of our 1000+ clients are happy
             </p>
-            <Button>Get started for free</Button>
+
+            {/* CLICK → GO TO DASHBOARD */}
+            <Button onClick={() => navigate("/dashboard")}>
+              Get started for free
+            </Button>
           </div>
 
           {/* Animated Scroller */}
@@ -94,7 +97,6 @@ export default function Testimonials() {
             }}
           >
             <div className="flex animate-scroller">
-              {/* Render testimonials twice for a seamless loop */}
               {[...testimonials, ...testimonials].map((testimonial, index) => (
                 <Card
                   key={index}
