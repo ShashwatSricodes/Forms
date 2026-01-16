@@ -20,29 +20,24 @@ const Navbar = () => {
     !!localStorage.getItem("authToken")
   );
 
-  // 🔥 NEW: Sync auth state on mount + navigation + Supabase persistence
+  // 🔥 Sync auth state
   useEffect(() => {
     const syncAuth = async () => {
-      // Check Supabase session (OAuth persistence)
       const { data } = await supabase.auth.getSession();
 
       if (data.session) {
-        // Ensure LS matches Supabase
         localStorage.setItem("authToken", data.session.access_token);
         setIsLoggedIn(true);
       } else {
-        // If no session, wipe LS token
-        if (!localStorage.getItem("authToken")) {
-          localStorage.removeItem("authToken");
-        }
-        setIsLoggedIn(!!localStorage.getItem("authToken"));
+        localStorage.removeItem("authToken");
+        setIsLoggedIn(false);
       }
     };
 
     syncAuth();
   }, [location.pathname]);
 
-  // Listen for manual token changes (Login → Callback → Logout)
+  // Listen for auth changes
   useEffect(() => {
     const handleAuthChange = () => {
       setIsLoggedIn(!!localStorage.getItem("authToken"));
@@ -51,9 +46,8 @@ const Navbar = () => {
     return () => window.removeEventListener("authChange", handleAuthChange);
   }, []);
 
-  // Logout handler
+  // Logout
   const handleLogout = async () => {
-    // Logout Supabase also
     await supabase.auth.signOut();
 
     localStorage.removeItem("authToken");
@@ -64,29 +58,25 @@ const Navbar = () => {
     navigate("/login", { replace: true });
   };
 
-  // Smooth scroll helpers (unchanged)
+  // Scroll helpers
   const handleScrollToFeatures = () => {
     if (location.pathname === "/") {
-      const el = document.getElementById("features");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
     } else {
       navigate("/");
       setTimeout(() => {
-        const el = document.getElementById("features");
-        if (el) el.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
       }, 300);
     }
   };
 
   const handleScrollToPricing = () => {
     if (location.pathname === "/") {
-      const el = document.getElementById("pricing");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
     } else {
       navigate("/");
       setTimeout(() => {
-        const el = document.getElementById("pricing");
-        if (el) el.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
       }, 300);
     }
   };
@@ -105,33 +95,43 @@ const Navbar = () => {
             />
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-8">
-            <Link to="/" className="text-sm font-medium hover:text-gray-700 transition-colors">
+            <Link to="/" className="text-sm font-medium hover:text-gray-700">
               Home
             </Link>
+
             <button
               onClick={handleScrollToFeatures}
-              className="text-sm font-medium hover:text-gray-700 transition-colors"
+              className="text-sm font-medium hover:text-gray-700"
             >
               Features
             </button>
-            <Link to="/dashboard" className="text-sm font-medium hover:text-gray-700 transition-colors">
+
+            <Link to="/dashboard" className="text-sm font-medium hover:text-gray-700">
               Dashboard
             </Link>
+
             <button
               onClick={handleScrollToPricing}
-              className="text-sm font-medium hover:text-gray-700 transition-colors"
+              className="text-sm font-medium hover:text-gray-700"
             >
               Pricing
             </button>
-            <Link to="/contact" className="text-sm font-medium hover:text-gray-700 transition-colors">
-              Contact
-            </Link>
+
+            {/* GitHub Link */}
+            <a
+              href="https://github.com/ShashwatSricodes/Forms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium hover:text-gray-700"
+            >
+              GitHub
+            </a>
           </div>
 
           {/* Desktop Buttons */}
-          <div className="hidden items-center gap-4 lg:flex">
+          <div className="hidden lg:flex items-center gap-4">
             {!isLoggedIn ? (
               <>
                 <Button asChild variant="outline">
@@ -151,7 +151,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Navigation */}
+          {/* Mobile Nav */}
           <Sheet>
             <SheetTrigger asChild className="lg:hidden">
               <Button variant="outline" size="icon">
@@ -174,25 +174,37 @@ const Navbar = () => {
               </SheetHeader>
 
               <div className="flex flex-col p-6 space-y-6">
-                <Link to="/" className="text-base font-medium hover:text-gray-700">Home</Link>
+                <Link to="/" className="text-base font-medium hover:text-gray-700">
+                  Home
+                </Link>
+
                 <button
                   onClick={handleScrollToFeatures}
                   className="text-base font-medium hover:text-gray-700 text-left"
                 >
                   Features
                 </button>
+
                 <Link to="/dashboard" className="text-base font-medium hover:text-gray-700">
                   Dashboard
                 </Link>
+
                 <button
                   onClick={handleScrollToPricing}
                   className="text-base font-medium hover:text-gray-700 text-left"
                 >
                   Pricing
                 </button>
-                <Link to="/contact" className="text-base font-medium hover:text-gray-700">
-                  Contact
-                </Link>
+
+                {/* GitHub Link */}
+                <a
+                  href="https://github.com/ShashwatSricodes/Forms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-base font-medium hover:text-gray-700"
+                >
+                  GitHub
+                </a>
 
                 <div className="mt-6 flex flex-col gap-4">
                   {!isLoggedIn ? (
